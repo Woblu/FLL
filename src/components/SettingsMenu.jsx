@@ -1,6 +1,5 @@
-// src/components/SettingsMenu.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { Sun, Moon, Settings, User, Shield, BookText } from "lucide-react"; // Import BookText
+import { Sun, Moon, Settings, User, Shield, BookText } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext.jsx";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { Link } from "react-router-dom";
@@ -46,7 +45,8 @@ export default function SettingsMenu() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 space-y-4 z-50">
           
-          {user && (user.role === 'ADMIN' || user.role === 'MODERATOR') && (
+          {/* New conditional link for Admins */}
+          {user && user.role === 'ADMIN' && (
             <>
               <Link
                 to="/admin"
@@ -74,7 +74,6 @@ export default function SettingsMenu() {
             </>
           )}
 
-          {/* New Guidelines Link */}
           <Link
             to="/guidelines"
             onClick={() => setIsOpen(false)}
