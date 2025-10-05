@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
 import { ChevronLeft, Copy } from 'lucide-react';
-import fllListData from '../data/fll-list.json'; // Import the static JSON data
+import axios from 'axios';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const getYouTubeVideoId = (urlOrId) => {
   if (!urlOrId) return null;
@@ -16,16 +17,40 @@ export default function LevelDetail() {
   const { listType, levelId } = useParams();
   const navigate = useNavigate();
   const { t } = useLanguage();
-
-  // Find the level directly from the imported JSON data
-  const level = useMemo(() => {
-    return fllListData.find(l => l.levelId === parseInt(levelId));
-  }, [levelId]);
+  
+  const [level, setLevel] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
   
   const [isCopied, setIsCopied] = useState(false);
-  
-  // Set the video ID from the found level
-  const currentVideoId = useMemo(() => getYouTubeVideoId(level?.videoId), [level]);
+  const [currentVideoId, setCurrentVideoId] = useState(null);
+
+  useEffect(() => {
+    const fetchLevel = async () => {
+      setIsLoading(true);
+      setError('');
+      try {
+        // The API now expects the full list name, e.g., 'fll-list'
+        const dbListName = `fll-list`;
+        const response = await axios.get(`/api/level/${levelId}?list=${dbListName}`);
+        
+        if (response.data) {
+          setLevel(response.data);
+          setCurrentVideoId(getYouTubeVideoId(response.data.videoId));
+        } else {
+          throw new Error("Level not found on this list.");
+        }
+      } catch (err) {
+        console.error("Failed to fetch level details:", err);
+        setError("Failed to load level data. It might not exist on this list.");
+        setLevel(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchLevel();
+  }, [levelId, listType]);
 
   const handleCopyClick = () => {
     if (level?.levelId) {
@@ -35,11 +60,15 @@ export default function LevelDetail() {
       });
     }
   };
-  
-  if (!level) {
+
+  if (isLoading) {
+    return <LoadingSpinner message="Loading Level Details..." />;
+  }
+
+  if (error || !level) {
     return (
       <div className="text-center p-8">
-        <h1 className="text-2xl font-bold text-red-500">Level Not Found</h1>
+        <h1 className="text-2xl font-bold text-red-500">{error || "Level Not Found"}</h1>
         <p className="text-gray-400">The level you're looking for doesn't exist in the list.</p>
         <button onClick={() => navigate('/')} className="mt-4 inline-flex items-center text-cyan-400 hover:underline">
           <ChevronLeft size={16} /> Go Back to List
