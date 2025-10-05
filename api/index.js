@@ -43,6 +43,9 @@ export default async function handler(req, res) {
   else if (path.match(/^\/api\/level\/\d+$/) && req.method === 'GET') {
     const levelId = parseInt(path.split('/')[3], 10);
     const { list } = req.query;
+
+      console.log(`[API DEBUG] Searching for level with ID: ${levelId} on list: ${list}`); 
+
     if (!list) { return res.status(400).json({ error: 'A list query parameter is required.' }); }
     try {
       const level = await prisma.level.findFirst({ where: { levelId: levelId, list: list } });
