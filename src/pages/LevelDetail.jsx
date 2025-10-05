@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
-import { ChevronLeft, Copy, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext.jsx';
-import axios from 'axios';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { ChevronLeft, Copy } from 'lucide-react';
+import fllListData from '../data/fll-list.json'; // Import the static JSON data
 
 const getYouTubeVideoId = (urlOrId) => {
   if (!urlOrId) return null;
@@ -18,51 +16,16 @@ export default function LevelDetail() {
   const { listType, levelId } = useParams();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { user, token } = useAuth();
-  
-  const [level, setLevel] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+
+  // Find the level directly from the imported JSON data
+  const level = useMemo(() => {
+    return fllListData.find(l => l.levelId === parseInt(levelId));
+  }, [levelId]);
   
   const [isCopied, setIsCopied] = useState(false);
-  const [currentVideoId, setCurrentVideoId] = useState(null);
-
-  const fetchLevelAndHistory = async () => {
-    setIsLoading(true);
-    setError(null);
-    setHistory([]);
-    try {
-      const dbListName = `${listType}-list`;
-      const listResponse = await axios.get(`/api/lists/${dbListName}`);
-      const foundLevel = listResponse.data.find(l => l.levelId === parseInt(levelId));
-
-      if (foundLevel) {
-        setLevel(foundLevel);
-        if (foundLevel.videoId) {
-          setCurrentVideoId(getYouTubeVideoId(foundLevel.videoId));
-        }
-        const historyResponse = await axios.get(`/api/levels/${foundLevel.id}/history`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setHistory(historyResponse.data);
-      } else {
-        throw new Error("Level not found on this list.");
-      }
-    } catch (err) {
-      console.error("Failed to fetch level details or history:", err);
-      setError("Failed to load level data. It might not exist on this list.");
-      setLevel(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    fetchLevelAndHistory();
-  }, [levelId, listType, token]);
+  
+  // Set the video ID from the found level
+  const currentVideoId = useMemo(() => getYouTubeVideoId(level?.videoId), [level]);
 
   const handleCopyClick = () => {
     if (level?.levelId) {
@@ -73,41 +36,17 @@ export default function LevelDetail() {
     }
   };
   
-  const handleRecordClick = (videoId) => {
-    setCurrentVideoId(getYouTubeVideoId(videoId));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleRemoveRecord = async (recordVideoId) => {
-    if (!window.confirm('Are you sure you want to permanently remove this record?')) return;
-    try {
-      await axios.post('/api/admin/remove-record', 
-        { levelId: level.id, recordVideoId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      fetchLevelAndHistory();
-    } catch (err)
- {
-      alert(`Failed to remove record: ${err.response?.data?.message || 'Server error'}`);
-    }
-  };
-
-  if (isLoading) {
-    return <LoadingSpinner message="Loading Level Details..." />;
-  }
-
-  if (error || !level) {
+  if (!level) {
     return (
       <div className="text-center p-8">
-        <h1 className="text-2xl font-bold text-red-500">{error || "Level Not Found"}</h1>
-        <button onClick={() => navigate(`/${listType}`)} className="mt-4 inline-flex items-center text-cyan-600 dark:text-cyan-400 hover:underline">
+        <h1 className="text-2xl font-bold text-red-500">Level Not Found</h1>
+        <p className="text-gray-400">The level you're looking for doesn't exist in the list.</p>
+        <button onClick={() => navigate('/')} className="mt-4 inline-flex items-center text-cyan-400 hover:underline">
           <ChevronLeft size={16} /> Go Back to List
         </button>
       </div>
     );
   }
-  
-  const verifierLabel = level.list === 'future-list' ? 'Verification Status:' : 'Verified by:';
   
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 text-gray-900 dark:text-gray-100">
@@ -131,7 +70,7 @@ export default function LevelDetail() {
             <span className="font-bold">Published by:</span> {level.creator}
           </p>
           <p className="text-lg text-gray-700 dark:text-gray-300">
-            <span className="font-bold">{verifierLabel}</span> {level.verifier}
+            <span className="font-bold">Verified by:</span> {level.verifier}
           </p>
         </div>
         
@@ -163,69 +102,6 @@ export default function LevelDetail() {
               className="rounded-xl shadow-lg"
             ></iframe>
           </div>
-        )}
-      </div>
-
-      {history.length > 0 && (
-        <div className="mb-6 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-inner">
-          <button 
-            onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-            className="w-full flex justify-between items-center p-4 text-xl font-bold text-cyan-600 dark:text-cyan-400"
-          >
-            <span>Position History</span>
-            {isHistoryOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
-          </button>
-          {isHistoryOpen && (
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-              <ul className="space-y-2">
-                {history.map(change => (
-                  <li key={change.id} className="text-gray-700 dark:text-gray-300 flex justify-between items-center">
-                    <span>{change.description}</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(change.createdAt).toLocaleString()}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-inner">
-        <h2 className="text-2xl font-bold text-center text-cyan-600 dark:text-cyan-400 mb-4">{t('records')}</h2>
-        
-        <ul className="text-center space-y-2 text-lg">
-          <li>
-            <button onClick={() => handleRecordClick(level.videoId)} className="text-cyan-600 dark:text-cyan-400 hover:underline">
-              <span className="font-bold">{level.verifier}</span>
-              <span className="font-mono text-sm text-gray-500 dark:text-gray-400 ml-2">(Verifier)</span>
-            </button>
-          </li>
-
-          {level.records && level.records.map((record, index) => (
-            record.videoId && (
-              <li key={index} className="flex items-center justify-center gap-2">
-                <button onClick={() => handleRecordClick(record.videoId)} className="text-cyan-600 dark:text-cyan-400 hover:underline">
-                  {record.username}
-                  <span className="font-mono text-sm text-gray-500 dark:text-gray-400 ml-2">({record.percent}%)</span>
-                </button>
-                {user && (user.role === 'ADMIN' || user.role === 'MODERATOR') && (
-                  <button
-                    onClick={() => handleRemoveRecord(record.videoId)}
-                    className="p-1 text-red-500 hover:bg-red-500/10 rounded-full transition-colors"
-                    title="Remove Record"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </li>
-            )
-          ))}
-        </ul>
-        
-        {(!level.records || level.records.length === 0) && (
-          <p className="text-center text-gray-600 dark:text-gray-400 mt-4">{t('no_records_yet')}</p>
         )}
       </div>
     </div>
