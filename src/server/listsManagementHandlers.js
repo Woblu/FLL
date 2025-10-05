@@ -26,9 +26,9 @@ export async function addLevelToList(req, res) {
       await tx.listChange.create({
         data: {
           type: 'ADD',
-          description: `${createdLevel.name} added at #${placement}`,
+          description: `${createdLevel.name} added to the ${list} at #${placement}`,
           levelId: createdLevel.id,
-          list: list, // Log which list was changed
+          list: list,
         },
       });
 
@@ -56,7 +56,7 @@ export async function removeLevelFromList(req, res) {
           type: 'REMOVE',
           description: `${levelToRemove.name} removed from ${levelToRemove.list} (was #${levelToRemove.placement})`,
           levelId: levelToRemove.id,
-          list: levelToRemove.list, // Log which list was changed
+          list: levelToRemove.list,
         },
       });
       await tx.level.delete({ where: { id: levelId } });
@@ -105,7 +105,7 @@ export async function moveLevelInList(req, res) {
             type: 'MOVE',
             description: `${finalUpdatedLevel.name} moved from #${oldPlacement} to #${newPlacement}`,
             levelId: finalUpdatedLevel.id,
-            list: list, // Log which list was changed
+            list: list,
           },
         });
       }
@@ -155,34 +155,19 @@ export async function getLevelHistory(req, res, levelId) {
     }
 }
 
-/**
- * Reconstructs the state of the main list at a specific point in time.
- */
 export async function getHistoricList(req, res) {
   const { date } = req.query;
   if (!date) {
     return res.status(400).json({ message: 'A date parameter is required.' });
   }
-
   try {
     const targetDate = new Date(date);
-
-    // 1. Start with the current state of the main list.
-    const currentLevels = await prisma.level.findMany({
-      where: { list: 'main-list' },
-    });
+    const currentLevels = await prisma.level.findMany({ where: { list: 'main-list' } });
     const levelsMap = new Map(currentLevels.map(level => [level.id, { ...level }]));
-
-    // 2. Get changes to undo (those that happened AFTER the target date), newest first.
     const changesToUndo = await prisma.listChange.findMany({
-      where: {
-        list: 'main-list',
-        createdAt: { gt: targetDate },
-      },
+      where: { list: 'main-list', createdAt: { gt: targetDate } },
       orderBy: { createdAt: 'desc' },
     });
-
-    // 3. "Undo" each change to revert the list to its state on the target date.
     for (const change of changesToUndo) {
       if (change.type === 'ADD') {
         levelsMap.delete(change.levelId);
@@ -192,16 +177,13 @@ export async function getHistoricList(req, res) {
         if (match) {
           const oldPlacement = parseInt(match[1]);
           const levelToRevert = levelsMap.get(change.levelId);
-          if (levelToRevert) {
-            levelToRevert.placement = oldPlacement;
-          }
+          if (levelToRevert) { levelToRevert.placement = oldPlacement; }
         }
       } 
       else if (change.type === 'REMOVE') {
         const match = change.description.match(/(.+) removed from .+ \(was #(\d+)\)/);
         if (match) {
           const [, levelName, oldPlacementStr] = match;
-          // Note: We can only reconstruct partial data for removed levels.
           levelsMap.set(change.levelId, {
             id: change.levelId,
             name: levelName,
@@ -213,20 +195,44 @@ export async function getHistoricList(req, res) {
         }
       }
     }
-
-    // 4. Convert map to array and sort by the reconstructed placements.
-    let finalHistoricList = Array.from(levelsMap.values())
-                                  .sort((a, b) => a.placement - b.placement);
-    
-    // 5. Re-normalize placements to be sequential to fix any gaps.
-    finalHistoricList.forEach((level, index) => {
-      level.placement = index + 1;
-    });
-
+    let finalHistoricList = Array.from(levelsMap.values()).sort((a, b) => a.placement - b.placement);
+    finalHistoricList.forEach((level, index) => { level.placement = index + 1; });
     return res.status(200).json(finalHistoricList);
-
   } catch (error) {
     console.error("Failed to get historic list:", error);
     return res.status(500).json({ message: 'Failed to retrieve historic list data.' });
+  }
+}
+
+export async function createLevelByUser(req, res, decodedToken) {
+  const { levelName, levelId, videoId } = req.body;
+  if (!levelName || !levelId || !videoId) {
+    return res.status(400).json({ message: 'Level Name, Level ID, and a Video ID are required.' });
+  }
+  const { username } = decodedToken;
+  try {
+    const lastLevel = await prisma.level.findFirst({
+      where: { list: 'fll-list' },
+      orderBy: { placement: 'desc' },
+    });
+    const newPlacement = lastLevel ? lastLevel.placement + 1 : 1;
+    const newLevel = await prisma.level.create({
+      data: {
+        name: levelName,
+        levelId: parseInt(levelId, 10),
+        videoId: videoId,
+        creator: username,
+        verifier: username,
+        placement: newPlacement,
+        list: 'fll-list',
+      },
+    });
+    return res.status(201).json(newLevel);
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({ message: 'A level with this Level ID already exists on the list.' });
+    }
+    console.error("Failed to create level by user:", error);
+    return res.status(500).json({ message: 'Failed to add level.' });
   }
 }

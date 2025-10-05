@@ -39,23 +39,13 @@ export default async function handler(req, res) {
     const { action } = req.body || {};
     if (path === '/api/auth' && action === 'login') return authHandlers.loginUser(req, res);
     if (path === '/api/register' || (path === '/api/auth' && action === 'register')) return authHandlers.registerUser(req, res);
-    return res.status(400).json({ message: 'Invalid auth action provided.' });
   } 
   else if (path.match(/^\/api\/level\/\d+$/) && req.method === 'GET') {
     const levelId = parseInt(path.split('/')[3], 10);
     const { list } = req.query;
-
-    if (!list) {
-      return res.status(400).json({ error: 'A list query parameter is required.' });
-    }
-
+    if (!list) { return res.status(400).json({ error: 'A list query parameter is required.' }); }
     try {
-      const level = await prisma.level.findFirst({ 
-        where: { 
-          levelId: levelId,
-          list: list 
-        } 
-      });
+      const level = await prisma.level.findFirst({ where: { levelId: levelId, list: list } });
       return level ? res.status(200).json(level) : res.status(404).json({ error: 'Level not found on this list' });
     } catch (error) {
       console.error(error);
@@ -88,6 +78,9 @@ export default async function handler(req, res) {
       if (req.method === 'GET') return userHandlers.getUser(req, res, decodedToken);
       if (req.method === 'POST') return userHandlers.pinRecord(req, res, decodedToken);
     } 
+    else if (path === '/api/levels' && req.method === 'POST') { // NEW ROUTE
+      return listManagementHandlers.createLevelByUser(req, res, decodedToken);
+    }
     else if (path === '/api/layout-reports' && req.method === 'POST') {
       return moderationHandlers.createLayoutReport(req, res, decodedToken);
     } 

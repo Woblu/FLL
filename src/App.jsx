@@ -10,6 +10,7 @@ import AccountPage from "./pages/AccountPage";
 import ProfileSettingsPage from './pages/account/ProfileSettingsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import GuidelinesPage from './pages/GuidelinesPage';
+import SubmitLevelPage from './pages/SubmitLevelPage'; // Import the new page
 
 // Core Components
 import Tabs from "./components/Tabs";
@@ -44,6 +45,7 @@ export default function App() {
             <Route path="/register" element={<RegisterPage />} />
             
             {/* Protected User Routes */}
+            <Route path="/submit-level" element={<ProtectedRoute><SubmitLevelPage /></ProtectedRoute>} />
             <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>}>
               <Route index element={<Navigate to="profile" replace />} />
               <Route path="profile" element={<ProfileSettingsPage />} />
