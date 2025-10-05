@@ -3,14 +3,10 @@ import React, { useState, useMemo } from 'react';
 import { X, Search } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
-import mainStats from '../data/main-statsviewer.json';
-import unratedStats from '../data/unrated-statsviewer.json';
-import platformerStats from '../data/platformer-statsviewer.json';
-import challengeStats from '../data/challenge-statsviewer.json';
-import speedhackStats from '../data/speedhack-statsviewer.json';
-import futureStats from '../data/future-statsviewer.json';
+import mainStats from '../data/fll-list.json';
 
-const statsData = { main: mainStats, unrated: unratedStats, platformer: platformerStats, challenge: challengeStats, speedhack: speedhackStats, future: futureStats };
+
+const statsData = { FLL: fllStats};
 
 export default function StatsViewer({ onClose, listType, title }) {
   const [search, setSearch] = useState('');
