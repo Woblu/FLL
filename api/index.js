@@ -35,11 +35,15 @@ export default async function handler(req, res) {
   }
 
   // --- PUBLIC ROUTES ---
-  if ((path === '/api/auth' || path === '/api/register') && req.method === 'POST') {
+  if (path === '/api/auth' && req.method === 'POST') {
     const { action } = req.body || {};
-    if (path === '/api/auth' && action === 'login') return authHandlers.loginUser(req, res);
-    if (path === '/api/register' || (path === '/api/auth' && action === 'register')) return authHandlers.registerUser(req, res);
+    if (action === 'login') return authHandlers.loginUser(req, res);
+    if (action === 'register') return authHandlers.registerUser(req, res);
+    return res.status(400).json({ message: 'Invalid auth action provided.' });
   } 
+  else if (path === '/api/register' && req.method === 'POST') { // Handle legacy register route
+    return authHandlers.registerUser(req, res);
+  }
   else if (path.match(/^\/api\/level\/\d+$/) && req.method === 'GET') {
     const levelId = parseInt(path.split('/')[3], 10);
     const level = await prisma.level.findFirst({ where: { levelId } });
