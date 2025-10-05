@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { BarChart2, LogIn, Settings } from "lucide-react";
+import { BarChart2, LogIn, Settings, UserPlus } from "lucide-react";
 import logo from "../assets/dashrank-logo.webp";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import StatsViewer from "./StatsViewer";
@@ -48,9 +48,14 @@ export default function Tabs() {
             {user ? (
               <SettingsMenu />
             ) : (
-              <Link to="/login" className="flex items-center gap-2 px-3 py-2 rounded-md font-semibold bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 transition-colors text-sm">
-                <LogIn className="w-4 h-4" /> Login
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link to="/login" className="flex items-center gap-2 px-3 py-2 rounded-md font-semibold bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 transition-colors text-sm">
+                  <LogIn className="w-4 h-4" /> Login
+                </Link>
+                <Link to="/register" className="flex items-center gap-2 px-3 py-2 rounded-md font-semibold bg-cyan-600 hover:bg-cyan-700 text-white transition-colors text-sm">
+                  <UserPlus className="w-4 h-4" /> Register
+                </Link>
+              </div>
             )}
           </div>
         </div>
