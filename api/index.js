@@ -35,19 +35,32 @@ export default async function handler(req, res) {
   }
 
   // --- PUBLIC ROUTES ---
-  if (path === '/api/auth' && req.method === 'POST') {
+  if ((path === '/api/auth' || path === '/api/register') && req.method === 'POST') {
     const { action } = req.body || {};
-    if (action === 'login') return authHandlers.loginUser(req, res);
-    if (action === 'register') return authHandlers.registerUser(req, res);
+    if (path === '/api/auth' && action === 'login') return authHandlers.loginUser(req, res);
+    if (path === '/api/register' || (path === '/api/auth' && action === 'register')) return authHandlers.registerUser(req, res);
     return res.status(400).json({ message: 'Invalid auth action provided.' });
   } 
-  else if (path === '/api/register' && req.method === 'POST') { // Handle legacy register route
-    return authHandlers.registerUser(req, res);
-  }
   else if (path.match(/^\/api\/level\/\d+$/) && req.method === 'GET') {
     const levelId = parseInt(path.split('/')[3], 10);
-    const level = await prisma.level.findFirst({ where: { levelId } });
-    return level ? res.status(200).json(level) : res.status(404).json({ error: 'Level not found' });
+    const { list } = req.query;
+
+    if (!list) {
+      return res.status(400).json({ error: 'A list query parameter is required.' });
+    }
+
+    try {
+      const level = await prisma.level.findFirst({ 
+        where: { 
+          levelId: levelId,
+          list: list 
+        } 
+      });
+      return level ? res.status(200).json(level) : res.status(404).json({ error: 'Level not found on this list' });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Failed to fetch level data.' });
+    }
   } 
   else if (path.match(/^\/api\/lists\/[a-zA-Z0-9_-]+$/) && req.method === 'GET') {
     const listType = path.split('/')[3];
