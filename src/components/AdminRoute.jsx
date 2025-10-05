@@ -3,7 +3,8 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
-const ROLES = ['ADMIN', 'MODERATOR'];
+// Updated to only include ADMIN
+const ROLES = ['ADMIN'];
 
 export default function AdminRoute({ children }) {
   const { user, loading } = useAuth();
