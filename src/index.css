@@ -53,15 +53,13 @@
 /* --- Styles for Background and Decorations --- */
 
 body {
-  /* Set the vibrant neon pink background, visible outside the main content area */
+  /* This pink is now only visible if the main content doesn't fill the screen height */
   background-color: #f500bd; 
 }
 
-/* This is the container for your main content. 
-  The margins push it away from the fixed sidebars.
-*/
+/* This is the container for your main content. */
 .main-content-area {
-  margin: 0 300px; /* Updated for 300px image width */
+  /* --- MARGIN REMOVED FROM THIS RULE --- */
   position: relative;
   background-color: #1a001a; 
   min-height: 100vh;
@@ -69,12 +67,12 @@ body {
 
 /* This styles the decorative sidebars. */
 .side-decoration {
-  position: absolute; /* Changed to absolute to position relative to main-content-area */
+  position: absolute; 
   top: 0;
   bottom: 0;
-  width: 300px; /* Updated for 300px image width */
+  width: 300px;
   background-image: url('/src/assets/c9b562fc33dfe9e93230abab38e1ef32.webp');
-  background-color: transparent; /* Ensures transparency works */
+  background-color: transparent;
   background-repeat: repeat-y;
 }
 
