@@ -196,7 +196,7 @@ export async function createLevelByUser(req, res, decodedToken) {
   const { username } = decodedToken;
   try {
     const lastLevel = await prisma.level.findFirst({
-      where: { list: 'fll-list' },
+      where: { list: 'main-list' },
       orderBy: { placement: 'desc' },
     });
     const newPlacement = lastLevel ? lastLevel.placement + 1 : 1;
@@ -208,7 +208,7 @@ export async function createLevelByUser(req, res, decodedToken) {
         creator: username,
         verifier: username,
         placement: newPlacement,
-        list: 'fll-list',
+        list: 'main-list',
       },
     });
     return res.status(201).json(newLevel);
