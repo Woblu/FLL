@@ -22,14 +22,18 @@ import ReloadPrompt from "./components/ReloadPrompt";
 export default function App() {
   return (
     <LanguageProvider>
-      <div className="relative min-h-screen bg-[#1a001a] text-white text-shadow-outline-purple flex flex-col overflow-x-hidden font-poppins">
+      <div className="side-decoration left"></div>
+      <div className="side-decoration right"></div>
+      
+      {/* Padding updated to match new decoration width */}
+      <div className="relative min-h-screen bg-[#1a001a] px-[150px] text-white text-shadow-outline-purple flex flex-col overflow-x-hidden font-poppins">
         
-        <div className="side-decoration left"></div>
-        <div className="side-decoration right"></div>
-        
-        <Tabs />
+        {/* This wrapper ensures the Tabs appear ON TOP of the side decorations */}
+        <div className="relative z-20">
+          <Tabs />
+        </div>
 
-        <main className="flex-grow p-4 pl-[300px] pr-[300px] w-full max-w-7xl mx-auto z-10">
+        <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-10">
           <Routes>
             {/* Core Public Routes */}
             <Route path="/" element={<Home />} />
@@ -47,7 +51,7 @@ export default function App() {
               <Route path="profile" element={<ProfileSettingsPage />} />
             </Route>
 
-            {/* Protected Admin Route - CORRECTED LINE */}
+            {/* Protected Admin Route */}
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
           </Routes>

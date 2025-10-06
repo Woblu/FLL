@@ -9,14 +9,14 @@ body {
 }
 
 .side-decoration {
-  position: fixed; /* Locks the element to the browser window */
+  position: fixed;
   top: 0;
   bottom: 0;
-  width: 300px;
+  width: 150px; /* Reduced from 300px */
   background-image: url('/src/assets/c9b562fc33dfe9e93230abab38e1ef32.webp');
   background-color: transparent;
   background-repeat: repeat-y;
-  z-index: 50; /* Ensures it's on top of all other page content */
+  z-index: 10; /* Lowered z-index */
 }
 
 .side-decoration.left {
@@ -25,7 +25,7 @@ body {
 
 .side-decoration.right {
   right: 0;
-  transform: scaleX(-1); /* Flips the element for perfect symmetry */
+  transform: scaleX(-1);
 }
 
 
@@ -36,12 +36,12 @@ body {
   width: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f0f0f0;
+  background: #f0f9ff;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: #06b6d4;
   border-radius: 8px;
-  border: 2px solid #f0f0f0;
+  border: 2px solid #f0f9ff;
   background-clip: content-box;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
@@ -63,7 +63,7 @@ body {
 /* For Firefox */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #06b6d4 #f0f0f0;
+  scrollbar-color: #06b6d4 #f0f9ff;
 }
 
 /* Dark mode adjustments for Firefox scrollbar */
