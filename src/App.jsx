@@ -22,35 +22,42 @@ import ReloadPrompt from "./components/ReloadPrompt";
 export default function App() {
   return (
     <LanguageProvider>
-      <div className="relative min-h-screen bg-bg-pink bg-gradient-to-br from-bg-pink to-bg-cyan text-white text-shadow-outline-purple flex flex-col overflow-x-hidden font-poppins">
-        
-        <Tabs />
+      {/* Side decorations are fixed and sit on the edges of the viewport */}
+      <div className="side-decoration left"></div>
+      <div className="side-decoration right"></div>
 
-        <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-10">
-          <Routes>
-            {/* Core Public Routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/level/:listType/:levelId" element={<LevelDetail />} />
-            <Route path="/guidelines" element={<GuidelinesPage />} />
-            
-            {/* Auth Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            
-            {/* Protected User Routes */}
-            <Route path="/submit-level" element={<ProtectedRoute><SubmitLevelPage /></ProtectedRoute>} />
-            <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>}>
-              <Route index element={<Navigate to="profile" replace />} />
-              <Route path="profile" element={<ProfileSettingsPage />} />
-            </Route>
+      {/* The main content area is pushed to the center by the margins defined in index.css */}
+      <div className="main-content-area">
+        <div className="relative min-h-screen text-white text-shadow-outline-purple flex flex-col overflow-x-hidden font-poppins">
+          
+          <Tabs />
 
-            {/* Protected Admin Route - CORRECTED LINE */}
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-10">
+            <Routes>
+              {/* Core Public Routes */}
+              <Route path="/" element={<Home />} />
+              <Route path="/level/:listType/:levelId" element={<LevelDetail />} />
+              <Route path="/guidelines" element={<GuidelinesPage />} />
+              
+              {/* Auth Routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              
+              {/* Protected User Routes */}
+              <Route path="/submit-level" element={<ProtectedRoute><SubmitLevelPage /></ProtectedRoute>} />
+              <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>}>
+                <Route index element={<Navigate to="profile" replace />} />
+                <Route path="profile" element={<ProfileSettingsPage />} />
+              </Route>
 
-          </Routes>
-        </main>
-        
-        <ReloadPrompt />
+              {/* Protected Admin Route */}
+              <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+
+            </Routes>
+          </main>
+          
+          <ReloadPrompt />
+        </div>
       </div>
     </LanguageProvider>
   );
