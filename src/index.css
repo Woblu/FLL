@@ -2,72 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Scrollbar Styles */
-
-/* For Webkit browsers (Chrome, Safari, Edge) */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 10px; /* Width of the scrollbar */
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f0f9ff; /* light-blue-50 - Color of the tracking area */
-  border-radius: 8px; /* Slightly rounded track */
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #06b6d4; /* cyan-500 - Color of the scroll thumb */
-  border-radius: 8px; /* Roundness of the scroll thumb */
-  border: 2px solid #f0f9ff; /* light-blue-50 - Padding around thumb, matching track color */
-  background-clip: content-box; /* Ensures border doesn't get colored */
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #0891b2; /* cyan-600 - Color on hover */
-}
-
-/* Dark mode adjustments for Webkit scrollbar */
-.dark .custom-scrollbar::-webkit-scrollbar-track {
-  background: #1f2937; /* gray-800 */
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #22d3ee; /* cyan-400 */
-  border: 2px solid #1f2937; /* gray-800 */
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #67e8f9; /* cyan-300 */
-}
-
-/* For Firefox */
-.custom-scrollbar {
-  scrollbar-width: thin; /* "auto" or "thin" */
-  scrollbar-color: #06b6d4 #f0f9ff; /* thumb color and track color (cyan-500 light-blue-50) */
-}
-
-/* Dark mode adjustments for Firefox scrollbar */
-.dark .custom-scrollbar {
-  scrollbar-color: #22d3ee #1f2937; /* thumb color and track color (cyan-400 gray-800) */
-}
-
-/* --- Styles for Background and Decorations --- */
+/* --- Main Layout Styles --- */
 
 body {
-  /* This pink is now only visible if the main content doesn't fill the screen height */
+  /* Set the vibrant neon pink background for the entire page */
   background-color: #f500bd; 
-}
-
-/* This is the container for your main content. */
-.main-content-area {
-  /* --- MARGIN REMOVED FROM THIS RULE --- */
-  position: relative;
-  background-color: #1a001a; 
-  min-height: 100vh;
+  /* Add padding to create a "safe area" for content, preventing overlap */
+  padding: 0 300px;
 }
 
 /* This styles the decorative sidebars. */
 .side-decoration {
-  position: absolute; 
+  position: fixed; /* Changed back to fixed for viewport positioning */
   top: 0;
   bottom: 0;
   width: 300px;
@@ -76,11 +22,59 @@ body {
   background-repeat: repeat-y;
 }
 
-/* Positions each sidebar */
+/* Positions each sidebar on the absolute edges of the screen */
 .side-decoration.left {
   left: 0;
 }
 
 .side-decoration.right {
   right: 0;
+}
+
+
+/* --- Custom Scrollbar Styles --- */
+
+/* For Webkit browsers (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f0f9ff;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #06b6d4;
+  border-radius: 8px;
+  border: 2px solid #f0f9ff;
+  background-clip: content-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #0891b2;
+}
+
+/* Dark mode adjustments for Webkit scrollbar */
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #22d3ee;
+  border: 2px solid #1f2937;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #67e8f9;
+}
+
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #06b6d4 #f0f9ff;
+}
+
+/* Dark mode adjustments for Firefox scrollbar */
+.dark .custom-scrollbar {
+  scrollbar-color: #22d3ee #1f2937;
 }

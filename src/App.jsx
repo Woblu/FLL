@@ -22,42 +22,40 @@ import ReloadPrompt from "./components/ReloadPrompt";
 export default function App() {
   return (
     <LanguageProvider>
-      {/* The main content area now contains the decorations */}
-      <div className="main-content-area">
-        {/* Decorations are now INSIDE, so the dark background shows through */}
-        <div className="side-decoration left"></div>
-        <div className="side-decoration right"></div>
+      {/* Decorations are fixed to the browser window edges */}
+      <div className="side-decoration left"></div>
+      <div className="side-decoration right"></div>
+      
+      {/* The dark background is applied directly to your content wrapper */}
+      <div className="relative min-h-screen bg-[#1a001a] text-white text-shadow-outline-purple flex flex-col overflow-x-hidden font-poppins">
         
-        <div className="relative min-h-screen text-white text-shadow-outline-purple flex flex-col overflow-x-hidden font-poppins">
-          
-          <Tabs />
+        <Tabs />
 
-          <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-10">
-            <Routes>
-              {/* Core Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/level/:listType/:levelId" element={<LevelDetail />} />
-              <Route path="/guidelines" element={<GuidelinesPage />} />
-              
-              {/* Auth Routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              
-              {/* Protected User Routes */}
-              <Route path="/submit-level" element={<ProtectedRoute><SubmitLevelPage /></ProtectedRoute>} />
-              <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>}>
-                <Route index element={<Navigate to="profile" replace />} />
-                <Route path="profile" element={<ProfileSettingsPage />} />
-              </Route>
+        <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-10">
+          <Routes>
+            {/* Core Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/level/:listType/:levelId" element={<LevelDetail />} />
+            <Route path="/guidelines" element={<GuidelinesPage />} />
+            
+            {/* Auth Routes */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            
+            {/* Protected User Routes */}
+            <Route path="/submit-level" element={<ProtectedRoute><SubmitLevelPage /></ProtectedRoute>} />
+            <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>}>
+              <Route index element={<Navigate to="profile" replace />} />
+              <Route path="profile" element={<ProfileSettingsPage />} />
+            </Route>
 
-              {/* Protected Admin Route */}
-              <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            {/* Protected Admin Route */}
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
-            </Routes>
-          </main>
-          
-          <ReloadPrompt />
-        </div>
+          </Routes>
+        </main>
+        
+        <ReloadPrompt />
       </div>
     </LanguageProvider>
   );
