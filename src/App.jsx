@@ -22,11 +22,12 @@ import ReloadPrompt from "./components/ReloadPrompt";
 export default function App() {
   return (
     <LanguageProvider>
-      <div className="relative min-h-screen bg-gradient-to-br from-bgPink via-bgPink to-bgCyan text-fllDarkText flex flex-col overflow-x-hidden">
+      {/* Updated background to a dark, purple-infused gradient */}
+      <div className="relative min-h-screen bg-gd-black bg-gradient-to-br from-gd-black via-gd-purple to-gd-black text-gd-white flex flex-col overflow-x-hidden font-poppins">
         
         <Tabs />
 
-        <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-20">
+        <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-10">
           <Routes>
             {/* Core Public Routes */}
             <Route path="/" element={<Home />} />
