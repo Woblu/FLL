@@ -2,34 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --- Main Layout Styles --- */
+/* --- Final Layout Styles --- */
 
 body {
-  /* The neon pink is now only the fallback background for the entire page */
   background-color: #f500bd; 
 }
 
-/* This styles the decorative sidebars. */
 .side-decoration {
-  position: absolute; /* Positioned relative to the main app container */
+  position: fixed; /* Locks the element to the browser window */
   top: 0;
   bottom: 0;
   width: 300px;
   background-image: url('/src/assets/c9b562fc33dfe9e93230abab38e1ef32.webp');
   background-color: transparent;
   background-repeat: repeat-y;
-  z-index: 1; /* Sits above the background but below the main content */
+  z-index: 50; /* Ensures it's on top of all other page content */
 }
 
-/* Positions each sidebar on the edges of the container */
 .side-decoration.left {
   left: 0;
 }
 
 .side-decoration.right {
   right: 0;
-  /* --- FIX: Horizontally flips the element to create a perfect mirror image --- */
-  transform: scaleX(-1);
+  transform: scaleX(-1); /* Flips the element for perfect symmetry */
 }
 
 
