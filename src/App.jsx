@@ -22,12 +22,12 @@ import ReloadPrompt from "./components/ReloadPrompt";
 export default function App() {
   return (
     <LanguageProvider>
-      {/* Side decorations are fixed and sit on the edges of the viewport */}
-      <div className="side-decoration left"></div>
-      <div className="side-decoration right"></div>
-
-      {/* The main content area is pushed to the center by the margins defined in index.css */}
+      {/* The main content area now contains the decorations */}
       <div className="main-content-area">
+        {/* Decorations are now INSIDE, so the dark background shows through */}
+        <div className="side-decoration left"></div>
+        <div className="side-decoration right"></div>
+        
         <div className="relative min-h-screen text-white text-shadow-outline-purple flex flex-col overflow-x-hidden font-poppins">
           
           <Tabs />

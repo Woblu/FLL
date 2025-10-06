@@ -50,10 +50,10 @@
   scrollbar-color: #22d3ee #1f2937; /* thumb color and track color (cyan-400 gray-800) */
 }
 
-/* --- New Styles for Background and Decorations --- */
+/* --- Styles for Background and Decorations --- */
 
 body {
-  /* Set the vibrant neon pink background */
+  /* Set the vibrant neon pink background, visible outside the main content area */
   background-color: #f500bd; 
 }
 
@@ -61,23 +61,21 @@ body {
   The margins push it away from the fixed sidebars.
 */
 .main-content-area {
-  margin: 0 500px; /* Updated for 500px image width */
+  margin: 0 300px; /* Updated for 300px image width */
   position: relative;
-  z-index: 1;
-  background-color: #1a001a; /* Optional: A dark background for the content area for contrast */
+  background-color: #1a001a; 
   min-height: 100vh;
 }
 
 /* This styles the decorative sidebars. */
 .side-decoration {
-  position: fixed;
+  position: absolute; /* Changed to absolute to position relative to main-content-area */
   top: 0;
   bottom: 0;
-  width: 500px; /* Updated for 500px image width */
+  width: 300px; /* Updated for 300px image width */
   background-image: url('/src/assets/c9b562fc33dfe9e93230abab38e1ef32.webp');
   background-color: transparent; /* Ensures transparency works */
   background-repeat: repeat-y;
-  z-index: 0;
 }
 
 /* Positions each sidebar */
