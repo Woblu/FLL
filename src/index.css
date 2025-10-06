@@ -36,12 +36,12 @@ body {
   width: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f0f9ff;
+  background: #f0f0f0;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: #06b6d4;
   border-radius: 8px;
-  border: 2px solid #f0f9ff;
+  border: 2px solid #f0f0f0;
   background-clip: content-box;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
@@ -63,7 +63,7 @@ body {
 /* For Firefox */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #06b6d4 #f0f9ff;
+  scrollbar-color: #06b6d4 #f0f0f0;
 }
 
 /* Dark mode adjustments for Firefox scrollbar */
