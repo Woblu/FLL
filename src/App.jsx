@@ -10,7 +10,7 @@ import AccountPage from "./pages/AccountPage";
 import ProfileSettingsPage from './pages/account/ProfileSettingsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import GuidelinesPage from './pages/GuidelinesPage';
-import SubmitLevelPage from './pages/SubmitLevelPage'; // Import the new page
+import SubmitLevelPage from './pages/SubmitLevelPage';
 
 // Core Components
 import Tabs from "./components/Tabs";
@@ -25,9 +25,10 @@ import sideDeco from "./assets/c9b562fc33dfe9e93230abab38e1ef32.webp";
 export default function App() {
   return (
     <LanguageProvider>
-      <div className="relative min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col overflow-x-hidden">
+      {/* Updated the main background and text colors */}
+      <div className="relative min-h-screen bg-fllDark text-fllWhite flex flex-col overflow-x-hidden">
         <div 
-          className="hidden lg:block absolute left-0 top-0 h-full w-32 xl:w-48 opacity-20 z-10"
+          className="hidden lg:block absolute left-0 top-0 h-full w-32 xl:w-48 opacity-10 z-10" // Reduced opacity
           style={{ backgroundImage: `url(${sideDeco})`, backgroundRepeat: "repeat-y", backgroundPosition: "0px -1.5rem", transform: "scaleX(-1)" }}
         ></div>
         
@@ -58,12 +59,12 @@ export default function App() {
         </main>
 
         <div 
-          className="hidden lg:block absolute right-0 top-0 h-full w-32 xl:w-48 opacity-20 z-10"
+          className="hidden lg:block absolute right-0 top-0 h-full w-32 xl:w-48 opacity-10 z-10" // Reduced opacity
           style={{ backgroundImage: `url(${sideDeco})`, backgroundRepeat: "repeat-y", backgroundPosition: "0px -1.5rem" }}
         ></div>
         
         <ReloadPrompt />
       </div>
-    </LanguageProvider>
+    </Language-Provider>
   );
 }
