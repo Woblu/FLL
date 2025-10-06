@@ -51,17 +51,18 @@ model LevelSubmission {
   videoId       String
   creatorName   String
   verifierName  String
-  status        String   @default("PENDING") // Using String for simplicity
+  status        String   @default("PENDING")
   createdAt     DateTime @default(now())
   submittedBy   User     @relation(fields: [submittedById], references: [id])
   submittedById String   @db.ObjectId
 }
 
 model ListChange {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt   DateTime @default(now())
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime   @default(now())
   type        ChangeType
   description String
-  level       Level?   @relation(fields: [levelId], references: [id], onDelete: SetNull)
-  levelId     String?  @db.ObjectId
+  list        String     // This field was missing
+  level       Level?     @relation(fields: [levelId], references: [id], onDelete: SetNull)
+  levelId     String?    @db.ObjectId
 }
