@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const plugin = require('tailwindcss/plugin');
+
 export default {
   content: [
     "./index.html",
@@ -8,34 +10,35 @@ export default {
   theme: {
     extend: {
       colors: {
-        // --- Angelicide Theme Colors ---
-        'gd-pink': '#F900B8',     // A vibrant, saturated neon pink
-        'gd-purple': '#4D0075',   // A deep purple for backgrounds and accents
-        'gd-cyan': '#00F2FF',      // A piercing cyan for highlights
-        'gd-white': '#F0F0F8',    // A very light, slightly cool off-white
-        'gd-black': '#0D021A',    // A dark, purple-tinted black for the base
-        'gd-gray': '#A095B8',     // A muted purple-gray for secondary text
+        // --- New Bright Neon Theme ---
+        'bg-pink': '#FF1D89',     // Main background neon pink
+        'bg-cyan': '#00FFFF',      // Secondary background neon cyan
+        'gd-purple': '#4D0075',   // A deep purple for outlines and dark UI
+        'gd-black': '#0D021A',    // Dark, purple-tinted black for UI panels
+        'gd-pink': '#F900B8',     // A saturated pink for highlights and accents
       },
-      dropShadow: {
-        'glow-pink': '0 0 12px rgba(249, 0, 184, 0.7)',
-        'glow-cyan': '0 0 12px rgba(0, 242, 255, 0.7)',
-        'glow-purple': '0 0 12px rgba(77, 0, 117, 0.9)',
-        'glow-white': '0 0 10px rgba(240, 240, 248, 0.5)',
-      },
-      keyframes: {
-        pulse: {
-          '0%, 100%': { opacity: 1, transform: 'scale(1)' },
-          '50%': { opacity: 0.85, transform: 'scale(1.02)' },
-        },
-      },
-      animation: {
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      // Define the text shadow values in the theme
+      textShadow: {
+        'outline-purple': '0 0 5px #4D0075, -1px -1px 3px #4D0075, 1px -1px 3px #4D0075, -1px 1px 3px #4D0075, 1px 1px 3px #4D0075',
       },
       fontFamily: {
-        // The Poppins font is a good fit, so let's define it explicitly
         'poppins': ['Poppins', 'sans-serif'],
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // Custom plugin to generate text-shadow utilities
+    plugin(function({ addUtilities, theme, e }) {
+      const newUtilities = {};
+      const textShadows = theme('textShadow');
+      if (textShadows) {
+        Object.entries(textShadows).forEach(([key, value]) => {
+          newUtilities[`.${e(`text-shadow-${key}`)}`] = {
+            textShadow: value,
+          };
+        });
+      }
+      addUtilities(newUtilities);
+    })
+  ],
 }

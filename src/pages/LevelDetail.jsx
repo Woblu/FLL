@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
-import { ChevronLeft, Copy, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronLeft, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -91,8 +91,8 @@ export default function LevelDetail() {
   if (error || !level) {
     return (
       <div className="text-center p-8">
-        <h1 className="text-2xl font-bold text-gd-pink drop-shadow-glow-pink">{error || "Level Not Found"}</h1>
-        <button onClick={() => navigate(`/`)} className="mt-4 inline-flex items-center text-gd-cyan hover:underline hover:drop-shadow-glow-cyan transition-all">
+        <h1 className="text-2xl font-bold">{error || "Level Not Found"}</h1>
+        <button onClick={() => navigate(`/`)} className="mt-4 inline-flex items-center hover:underline">
           <ChevronLeft size={16} /> Go Back to List
         </button>
       </div>
@@ -103,34 +103,34 @@ export default function LevelDetail() {
   const recordVerifierLabel = level.list === 'future-list' ? '(Status)' : '(Verifier)';
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 text-gd-white">
-      <div className="relative bg-gd-black/60 border-2 border-gd-pink backdrop-blur-sm p-4 sm:p-6 rounded-xl shadow-2xl shadow-gd-pink/20 mb-6">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6">
+      <div className="relative bg-gd-black/70 border-2 border-gd-purple backdrop-blur-sm p-4 sm:p-6 rounded-xl shadow-2xl mb-6">
         <button 
           onClick={() => navigate(-1)} 
-          className="absolute top-4 left-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-gd-purple/50 text-gd-white hover:bg-gd-pink/80 hover:scale-110 transition-all"
+          className="absolute top-4 left-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-gd-purple/50 hover:bg-gd-pink/80 hover:scale-110 transition-all"
           aria-label="Go back"
         >
           <ChevronLeft size={24} />
         </button>
 
         <div className="text-center mb-4 pt-8 sm:pt-0">
-          <h1 className="font-poppins text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gd-pink to-gd-cyan break-words drop-shadow-glow-pink animate-pulse-slow">
+          <h1 className="font-poppins text-5xl font-bold break-words">
             #{level.placement} - {level.name}
           </h1>
         </div>
 
         <div className="flex flex-wrap justify-center text-center mb-4 gap-x-8 gap-y-2 text-lg">
-          <p className="text-gd-gray"><span className="font-bold text-gd-white">Published by:</span> {level.creator}</p>
-          <p className="text-gd-gray"><span className="font-bold text-gd-white">{verifierLabel}</span> {level.verifier}</p>
+          <p><span className="font-bold">Published by:</span> {level.creator}</p>
+          <p><span className="font-bold">{verifierLabel}</span> {level.verifier}</p>
         </div>
         
         {level.levelId && (
           <div className="text-center mb-6">
-            <p className="text-lg text-gd-gray">
-              <span className="font-bold text-gd-white">Level ID:</span>
+            <p className="text-lg">
+              <span className="font-bold">Level ID:</span>
               <button
                 onClick={handleCopyClick}
-                className="ml-2 px-3 py-1 rounded-md font-mono bg-gd-black border border-gd-purple hover:bg-gd-purple/60 text-gd-cyan transition-colors"
+                className="ml-2 px-3 py-1 rounded-md font-mono bg-gd-black border border-gd-purple hover:bg-gd-purple/60 transition-colors text-shadow-none"
               >
                 {isCopied ? t('copied') : level.levelId}
               </button>
@@ -155,10 +155,10 @@ export default function LevelDetail() {
       </div>
 
       {history.length > 0 && (
-        <div className="mb-6 bg-gd-black/50 border border-gd-purple backdrop-blur-sm rounded-lg shadow-inner">
+        <div className="mb-6 bg-gd-black/60 border border-gd-purple backdrop-blur-sm rounded-lg shadow-inner">
           <button 
             onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-            className="w-full flex justify-between items-center p-4 text-xl font-bold text-gd-cyan hover:text-gd-pink transition-colors"
+            className="w-full flex justify-between items-center p-4 text-xl font-bold hover:text-gray-300 transition-colors"
           >
             <span>Position History</span>
             {isHistoryOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
@@ -167,9 +167,9 @@ export default function LevelDetail() {
             <div className="p-4 border-t border-gd-purple/50">
               <ul className="space-y-2">
                 {history.map(change => (
-                  <li key={change.id} className="text-gd-gray flex justify-between items-center text-sm">
+                  <li key={change.id} className="text-gray-300 flex justify-between items-center text-sm">
                     <span>{change.description}</span>
-                    <span className="text-gray-500">{new Date(change.createdAt).toLocaleString()}</span>
+                    <span className="text-gray-400 text-shadow-none">{new Date(change.createdAt).toLocaleString()}</span>
                   </li>
                 ))}
               </ul>
@@ -178,23 +178,23 @@ export default function LevelDetail() {
         </div>
       )}
 
-      <div className="bg-gd-black/50 border border-gd-purple backdrop-blur-sm p-6 rounded-lg shadow-inner">
-        <h2 className="text-3xl font-bold text-center text-gd-cyan mb-4 drop-shadow-glow-cyan">{t('records')}</h2>
+      <div className="bg-gd-black/60 border border-gd-purple backdrop-blur-sm p-6 rounded-lg shadow-inner">
+        <h2 className="text-3xl font-bold text-center mb-4">{t('records')}</h2>
         
         <ul className="text-center space-y-2 text-lg">
           <li>
-            <button onClick={() => handleRecordClick(level.videoId)} className="text-gd-cyan hover:text-gd-pink transition-colors hover:drop-shadow-glow-pink">
+            <button onClick={() => handleRecordClick(level.videoId)} className="hover:text-gray-300 transition-colors">
               <span className="font-bold">{level.verifier}</span>
-              <span className="font-mono text-sm text-gd-gray ml-2">{recordVerifierLabel}</span>
+              <span className="font-mono text-sm text-gray-400 ml-2 text-shadow-none">{recordVerifierLabel}</span>
             </button>
           </li>
 
           {level.records?.map((record, index) => (
             record.videoId && (
               <li key={index} className="flex items-center justify-center gap-2 group">
-                <button onClick={() => handleRecordClick(record.videoId)} className="text-gd-cyan hover:text-gd-pink transition-colors hover:drop-shadow-glow-pink">
+                <button onClick={() => handleRecordClick(record.videoId)} className="hover:text-gray-300 transition-colors">
                   {record.username}
-                  <span className="font-mono text-sm text-gd-gray ml-2">({record.percent}%)</span>
+                  <span className="font-mono text-sm text-gray-400 ml-2 text-shadow-none">({record.percent}%)</span>
                 </button>
                 {user && (user.role === 'ADMIN' || user.role === 'MODERATOR') && (
                   <button
@@ -211,7 +211,7 @@ export default function LevelDetail() {
         </ul>
         
         {!level.records?.length && (
-          <p className="text-center text-gd-gray mt-4">{t('no_records_yet')}</p>
+          <p className="text-center text-gray-400 mt-4">{t('no_records_yet')}</p>
         )}
       </div>
     </div>
