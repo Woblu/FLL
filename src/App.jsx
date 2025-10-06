@@ -22,16 +22,16 @@ import ReloadPrompt from "./components/ReloadPrompt";
 export default function App() {
   return (
     <LanguageProvider>
-      {/* Decorations are fixed to the browser window edges */}
-      <div className="side-decoration left"></div>
-      <div className="side-decoration right"></div>
-      
-      {/* The dark background is applied directly to your content wrapper */}
       <div className="relative min-h-screen bg-[#1a001a] text-white text-shadow-outline-purple flex flex-col overflow-x-hidden font-poppins">
+        
+        {/* Decorations are now children of the main dark container */}
+        <div className="side-decoration left"></div>
+        <div className="side-decoration right"></div>
         
         <Tabs />
 
-        <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-10">
+        {/* Added padding here to create space for the decorations */}
+        <main className="flex-grow p-4 pl-[300px] pr-[300px] w-full max-w-7xl mx-auto z-10">
           <Routes>
             {/* Core Public Routes */}
             <Route path="/" element={<Home />} />
@@ -50,7 +50,7 @@ export default function App() {
             </Route>
 
             {/* Protected Admin Route */}
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></Route>} />
 
           </Routes>
         </main>
