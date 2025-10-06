@@ -10,31 +10,21 @@ export async function addLevelToList(req, res) {
 
   try {
     const newLevel = await prisma.$transaction(async (tx) => {
-      await tx.level.updateMany({
-        where: { list, placement: { gte: placement } },
-        data: { placement: { increment: 1 } },
-      });
-
-      const dataToCreate = {
-        ...levelData,
-        levelId: parseInt(levelData.levelId, 10),
-        placement: parseInt(placement, 10),
-        list,
-      };
+      await tx.level.updateMany({ where: { list, placement: { gte: placement } }, data: { placement: { increment: 1 } } });
+      const dataToCreate = { ...levelData, levelId: parseInt(levelData.levelId, 10), placement: parseInt(placement, 10), list };
       const createdLevel = await tx.level.create({ data: dataToCreate });
 
       await tx.listChange.create({
         data: {
           type: 'ADD',
           description: `${createdLevel.name} added to the ${list} at #${placement}`,
-          levelId: createdLevel.id,
           list: list,
+          level: { connect: { id: createdLevel.id } },
         },
       });
 
       const limit = list === 'main-list' ? 150 : 75;
       await tx.level.deleteMany({ where: { list, placement: { gt: limit } } });
-
       return createdLevel;
     });
     return res.status(201).json(newLevel);
@@ -51,19 +41,18 @@ export async function removeLevelFromList(req, res) {
     const result = await prisma.$transaction(async (tx) => {
       const levelToRemove = await tx.level.findUnique({ where: { id: levelId } });
       if (!levelToRemove) throw new Error('Level not found.');
+
       await tx.listChange.create({
         data: {
           type: 'REMOVE',
           description: `${levelToRemove.name} removed from ${levelToRemove.list} (was #${levelToRemove.placement})`,
-          levelId: levelToRemove.id,
           list: levelToRemove.list,
+          level: { connect: { id: levelToRemove.id } },
         },
       });
+
       await tx.level.delete({ where: { id: levelId } });
-      await tx.level.updateMany({
-        where: { list: levelToRemove.list, placement: { gt: levelToRemove.placement } },
-        data: { placement: { decrement: 1 } },
-      });
+      await tx.level.updateMany({ where: { list: levelToRemove.list, placement: { gt: levelToRemove.placement } }, data: { placement: { decrement: 1 } } });
       return { message: `${levelToRemove.name} removed successfully.` };
     });
     return res.status(200).json(result);
@@ -82,33 +71,28 @@ export async function moveLevelInList(req, res) {
       if (!levelToMove) throw new Error('Level not found');
       const oldPlacement = levelToMove.placement;
       const { list } = levelToMove;
+
       if (oldPlacement !== newPlacement) {
         if (oldPlacement > newPlacement) {
-          await tx.level.updateMany({
-            where: { list, placement: { gte: newPlacement, lt: oldPlacement } },
-            data: { placement: { increment: 1 } },
-          });
+          await tx.level.updateMany({ where: { list, placement: { gte: newPlacement, lt: oldPlacement } }, data: { placement: { increment: 1 } } });
         } else {
-          await tx.level.updateMany({
-            where: { list, placement: { gt: oldPlacement, lte: newPlacement } },
-            data: { placement: { decrement: 1 } },
-          });
+          await tx.level.updateMany({ where: { list, placement: { gt: oldPlacement, lte: newPlacement } }, data: { placement: { decrement: 1 } } });
         }
       }
-      const finalUpdatedLevel = await tx.level.update({
-        where: { id: levelId },
-        data: { placement: newPlacement },
-      });
+      
+      const finalUpdatedLevel = await tx.level.update({ where: { id: levelId }, data: { placement: newPlacement } });
+
       if (oldPlacement !== newPlacement) {
         await tx.listChange.create({
           data: {
             type: 'MOVE',
             description: `${finalUpdatedLevel.name} moved from #${oldPlacement} to #${newPlacement}`,
-            levelId: finalUpdatedLevel.id,
             list: list,
+            level: { connect: { id: finalUpdatedLevel.id } },
           },
         });
       }
+
       const limit = list === 'main-list' ? 150 : 75;
       await tx.level.deleteMany({ where: { list, placement: { gt: limit } } });
       return finalUpdatedLevel;
