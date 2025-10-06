@@ -10,14 +10,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        // --- New Bright Neon Theme ---
-        'bg-pink': '#FF1D89',     // Main background neon pink
-        'bg-cyan': '#00FFFF',      // Secondary background neon cyan
-        'gd-purple': '#4D0075',   // A deep purple for outlines and dark UI
-        'gd-black': '#0D021A',    // Dark, purple-tinted black for UI panels
-        'gd-pink': '#F900B8',     // A saturated pink for highlights and accents
+        // --- Corrected Neon Theme ---
+        'brand-pink': '#FF00FF',     // Pure Neon Pink for the main background
+        'brand-cyan': '#00FFFF',     // Neon cyan for gradients/accents
+        'brand-purple': '#4D0075',  // A deep purple for outlines and dark UI
+        'brand-black': '#000000',     // Pure Black for dark mode background
+        'fll-dark': '#0D021A',     // Dark, purple-tinted black for UI panels
+        'fll-pink': '#F900B8',      // A saturated pink for highlights
       },
-      // Define the text shadow values in the theme
       textShadow: {
         'outline-purple': '0 0 5px #4D0075, -1px -1px 3px #4D0075, 1px -1px 3px #4D0075, -1px 1px 3px #4D0075, 1px 1px 3px #4D0075',
       },
@@ -27,7 +27,6 @@ export default {
     },
   },
   plugins: [
-    // Custom plugin to generate text-shadow utilities
     plugin(function({ addUtilities, theme, e }) {
       const newUtilities = {};
       const textShadows = theme('textShadow');

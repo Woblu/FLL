@@ -25,10 +25,9 @@ import ReloadPrompt from "./components/ReloadPrompt";
 export default function App() {
   return (
     <LanguageProvider>
-      {/* Main container is relative, providing the positioning context */}
-      <div className="relative min-h-screen bg-[#1a001a] text-white flex flex-col overflow-x-hidden font-poppins">
+      {/* The main container no longer has a hardcoded background color */}
+      <div className="relative min-h-screen text-white flex flex-col overflow-x-hidden font-poppins">
         
-        {/* Left Decoration: Flipped */}
         <div 
           className="hidden lg:block absolute left-0 top-0 h-full w-32 xl:w-48 opacity-20 z-10 pointer-events-none"
           style={{ 
@@ -38,12 +37,10 @@ export default function App() {
           }}
         ></div>
         
-        {/* Wrapper for Tabs to ensure they are on top of decorations */}
         <div className="relative z-20">
           <Tabs />
         </div>
 
-        {/* The main content sits on top of the decorations */}
         <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-20">
           <Routes>
             {/* Core Public Routes */}
@@ -67,7 +64,6 @@ export default function App() {
           </Routes>
         </main>
         
-        {/* Right Decoration: Not Flipped */}
         <div 
           className="hidden lg:block absolute right-0 top-0 h-full w-32 xl:w-48 opacity-20 z-10 pointer-events-none"
           style={{ 
