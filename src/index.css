@@ -2,34 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --- Final Layout Styles --- */
-
-body {
-  background-color: #f500bd; 
-}
-
-.side-decoration {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  width: 150px; /* Reduced from 300px */
-  background-image: url('/src/assets/c9b562fc33dfe9e93230abab38e1ef32.webp');
-  background-color: transparent;
-  background-repeat: repeat-y;
-  z-index: 10; /* Lowered z-index */
-}
-
-.side-decoration.left {
-  left: 0;
-}
-
-.side-decoration.right {
-  right: 0;
-  transform: scaleX(-1);
-}
-
-
-/* --- Custom Scrollbar Styles --- */
+/* Custom Scrollbar Styles */
 
 /* For Webkit browsers (Chrome, Safari, Edge) */
 .custom-scrollbar::-webkit-scrollbar {

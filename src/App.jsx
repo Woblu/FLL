@@ -1,6 +1,9 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
+// Import your image asset
+import sideDeco from "./assets/c9b562fc33dfe9e93230abab38e1ef32.webp";
+
 // Core Pages
 import Home from "./pages/Home";
 import LevelDetail from "./pages/LevelDetail";
@@ -22,18 +25,26 @@ import ReloadPrompt from "./components/ReloadPrompt";
 export default function App() {
   return (
     <LanguageProvider>
-      <div className="side-decoration left"></div>
-      <div className="side-decoration right"></div>
-      
-      {/* Padding updated to match new decoration width */}
-      <div className="relative min-h-screen bg-[#1a001a] px-[150px] text-white text-shadow-outline-purple flex flex-col overflow-x-hidden font-poppins">
+      {/* Main container is relative, providing the positioning context */}
+      <div className="relative min-h-screen bg-[#1a001a] text-white flex flex-col overflow-x-hidden font-poppins">
         
-        {/* This wrapper ensures the Tabs appear ON TOP of the side decorations */}
+        {/* Left Decoration: Flipped */}
+        <div 
+          className="hidden lg:block absolute left-0 top-0 h-full w-32 xl:w-48 opacity-20 z-10 pointer-events-none"
+          style={{ 
+            backgroundImage: `url(${sideDeco})`, 
+            backgroundRepeat: "repeat-y",
+            transform: "scaleX(-1)" 
+          }}
+        ></div>
+        
+        {/* Wrapper for Tabs to ensure they are on top of decorations */}
         <div className="relative z-20">
           <Tabs />
         </div>
 
-        <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-10">
+        {/* The main content sits on top of the decorations */}
+        <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-20">
           <Routes>
             {/* Core Public Routes */}
             <Route path="/" element={<Home />} />
@@ -53,9 +64,17 @@ export default function App() {
 
             {/* Protected Admin Route */}
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-
           </Routes>
         </main>
+        
+        {/* Right Decoration: Not Flipped */}
+        <div 
+          className="hidden lg:block absolute right-0 top-0 h-full w-32 xl:w-48 opacity-20 z-10 pointer-events-none"
+          style={{ 
+            backgroundImage: `url(${sideDeco})`, 
+            backgroundRepeat: "repeat-y"
+          }}
+        ></div>
         
         <ReloadPrompt />
       </div>
