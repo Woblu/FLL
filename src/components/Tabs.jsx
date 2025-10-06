@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { BarChart2, LogIn, Settings, UserPlus, Upload } from "lucide-react";
+import { BarChart2, LogIn, Settings, UserPlus } from "lucide-react";
 import logo from "../assets/dashrank-logo.webp";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import StatsViewer from "./StatsViewer";
@@ -25,24 +25,13 @@ export default function Tabs() {
           </div>
 
           {/* Center: Main Navigation */}
-          <nav className="flex-1 flex justify-center items-center gap-2">
+          <nav className="flex-1 flex justify-center">
              <NavLink
                 to="/"
                 className={({ isActive }) => `px-4 py-2 rounded-md font-semibold transition-colors text-sm whitespace-nowrap flex items-center gap-2 ${isActive ? "bg-cyan-600 text-white" : "text-cyan-600 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-700/50"}`}
               >
-                The List
+                FLL
               </NavLink>
-            
-            {/* New "Submit Level" Link for logged-in users */}
-            {user && (
-              <NavLink
-                to="/submit-level"
-                className={({ isActive }) => `px-4 py-2 rounded-md font-semibold transition-colors text-sm whitespace-nowrap flex items-center gap-2 ${isActive ? "bg-cyan-600 text-white" : "text-cyan-600 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-700/50"}`}
-              >
-                <Upload className="w-4 h-4" />
-                Submit Level
-              </NavLink>
-            )}
           </nav>
 
           {/* Right Side: Actions */}
