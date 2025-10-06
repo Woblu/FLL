@@ -126,12 +126,13 @@ export default function Home() {
   
   const filteredLevels = levels.filter(level => {
     const searchTerm = search.toLowerCase();
-    return (
-      level.name.toLowerCase().includes(searchTerm) ||
-      level.placement.toString().includes(searchTerm) ||
-      (level.creator && level.creator.toLowerCase().includes(searchTerm)) ||
-      (level.verifier && level.verifier.toLowerCase().includes(searchTerm))
-    );
+    // Safely check each property before trying to call a method on it.
+    const nameMatch = level.name && level.name.toLowerCase().includes(searchTerm);
+    const placementMatch = level.placement && level.placement.toString().includes(searchTerm);
+    const creatorMatch = level.creator && level.creator.toLowerCase().includes(searchTerm);
+    const verifierMatch = level.verifier && level.verifier.toLowerCase().includes(searchTerm);
+
+    return nameMatch || placementMatch || creatorMatch || verifierMatch;
   });
   
   const handleOpenEditModal = (record) => { setRecordToEdit(record); setIsModalOpen(true); };
