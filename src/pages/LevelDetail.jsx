@@ -4,7 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext.jsx';
 import { ChevronLeft, Copy, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import axios from 'axios';
-import LoadingSpinner from '../components/LoadingSpinner'; // Import the spinner
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const getYouTubeVideoId = (urlOrId) => {
   if (!urlOrId) return null;
@@ -43,10 +43,13 @@ export default function LevelDetail() {
         if (foundLevel.videoId) {
           setCurrentVideoId(getYouTubeVideoId(foundLevel.videoId));
         }
-        const historyResponse = await axios.get(`/api/levels/${foundLevel.id}/history`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setHistory(historyResponse.data);
+        // Assuming history is a protected route
+        if (token) {
+          const historyResponse = await axios.get(`/api/levels/${foundLevel.id}/history`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setHistory(historyResponse.data);
+        }
       } else {
         throw new Error("Level not found on this list.");
       }
@@ -107,7 +110,8 @@ export default function LevelDetail() {
   }
   
   const verifierLabel = level.list === 'future-list' ? 'Verification Status:' : 'Verified by:';
-  
+  const recordVerifierLabel = level.list === 'future-list' ? '(Status)' : '(Verifier)';
+
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 text-fllWhite">
       <div className="relative bg-fllDark/50 border border-fllPurple/50 backdrop-blur-sm p-4 sm:p-6 rounded-xl shadow-lg mb-6">
@@ -198,7 +202,7 @@ export default function LevelDetail() {
           <li>
             <button onClick={() => handleRecordClick(level.videoId)} className="text-fllCyan hover:text-fllPink transition-colors">
               <span className="font-bold">{level.verifier}</span>
-              <span className="font-mono text-sm text-gray-400 ml-2">(Verifier)</span>
+              <span className="font-mono text-sm text-gray-400 ml-2">{recordVerifierLabel}</span>
             </button>
           </li>
 
@@ -209,7 +213,7 @@ export default function LevelDetail() {
                   {record.username}
                   <span className="font-mono text-sm text-gray-400 ml-2">({record.percent}%)</span>
                 </button>
-                {user && (user.role === 'ADMIN') && (
+                {user && (user.role === 'ADMIN' || user.role === 'MODERATOR') && (
                   <button
                     onClick={() => handleRemoveRecord(record.videoId)}
                     className="p-1 text-red-500 hover:bg-red-500/10 rounded-full transition-colors"

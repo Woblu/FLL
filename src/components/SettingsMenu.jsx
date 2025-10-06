@@ -1,115 +1,70 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Sun, Moon, Settings, User, Shield, BookText } from "lucide-react";
-import { useLanguage } from "../contexts/LanguageContext.jsx";
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Settings, LogOut, User, LayoutDashboard, Flag } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext.jsx";
-import { Link } from "react-router-dom";
+import { useLanguage } from "../contexts/LanguageContext.jsx";
 
 export default function SettingsMenu() {
   const [isOpen, setIsOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("darkMode") === "true");
-  const { language, setLanguage, t } = useLanguage();
-  const { user } = useAuth();
-  const menuRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { t } = useLanguage();
+
+  const handleLogout = () => {
+    logout();
+    setIsOpen(false);
+    navigate('/');
+  };
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    localStorage.setItem("darkMode", darkMode);
-  }, [darkMode]);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
-    }
+    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [menuRef]);
+  }, [dropdownRef]);
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="relative" ref={dropdownRef}>
       <button
-        title="Settings"
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-md font-semibold bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 rounded-md font-semibold bg-fllPurple/30 hover:bg-fllPurple/50 text-fllWhite transition-colors text-sm"
+        aria-label="Settings and user menu"
       >
-        <Settings className="w-5 h-5 text-gray-800 dark:text-gray-200" />
+        <Settings className="w-4 h-4" />
+        <span className="hidden md:inline">{user?.username || 'User'}</span>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 p-4 space-y-4 z-50">
-          
-          {/* New conditional link for Admins */}
-          {user && user.role === 'ADMIN' && (
-            <>
-              <Link
-                to="/admin"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 text-gray-900 dark:text-gray-100 font-semibold hover:text-cyan-500 transition-colors"
-              >
-                <Shield className="w-5 h-5" />
-                <span>Admin Panel</span>
-              </Link>
-              <hr className="border-gray-300 dark:border-gray-600 my-2" />
-            </>
-          )}
-
-          {user && (
-            <>
-              <Link
-                to="/account"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 text-gray-900 dark:text-gray-100 font-semibold hover:text-cyan-500 transition-colors"
-              >
-                <User className="w-5 h-5" />
-                <span>My Account</span>
-              </Link>
-              <hr className="border-gray-300 dark:border-gray-600 my-2" />
-            </>
-          )}
-
+        <div className="absolute right-0 mt-2 w-48 bg-fllDark/80 backdrop-blur-md border border-fllPurple/50 rounded-lg shadow-xl py-1 z-50">
           <Link
-            to="/guidelines"
+            to="/account"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 text-gray-900 dark:text-gray-100 font-semibold hover:text-cyan-500 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-fllWhite hover:text-fllPink hover:bg-fllPurple/30 transition-colors text-sm"
           >
-            <BookText className="w-5 h-5" />
-            <span>Guidelines</span>
+            <User className="w-4 h-4" /> {t('my_account')}
           </Link>
-
-          <hr className="border-gray-300 dark:border-gray-600 my-2" />
-
-          <div className="flex items-center justify-between">
-            <span className="text-gray-900 dark:text-gray-100 font-semibold">Theme</span>
-            <div className="flex items-center justify-center gap-3">
-              <Sun className="w-5 h-5 text-yellow-500" />
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" checked={darkMode} onChange={() => setDarkMode(!darkMode)} />
-                <div className="w-12 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-cyan-400 peer-checked:bg-cyan-500 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all dark:after:bg-gray-800 dark:after:border-gray-600 peer-checked:after:translate-x-6"></div>
-              </label>
-              <Moon className="w-5 h-5 text-blue-300" />
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-gray-900 dark:text-gray-100 font-semibold">{t('language')}</span>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-md p-1 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+          {user?.role === 'ADMIN' && (
+            <Link
+              to="/admin"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 px-4 py-2 text-fllWhite hover:text-fllPink hover:bg-fllPurple/30 transition-colors text-sm"
             >
-              <option value="en">English</option>
-              <option value="es">Español</option>
-              <option value="ko">한국어</option>
-              <option value="ru">Русский</option>
-            </select>
-          </div>
+              <LayoutDashboard className="w-4 h-4" /> Admin Dashboard
+            </Link>
+          )}
+          <div className="border-t border-fllPurple/50 my-1"></div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm font-semibold bg-gradient-to-r from-fllPink to-fllCyan text-white hover:opacity-90 transition-opacity"
+          >
+            <LogOut className="w-4 h-4" /> {t('logout')}
+          </button>
         </div>
       )}
     </div>
