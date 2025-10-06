@@ -22,7 +22,6 @@ import ReloadPrompt from "./components/ReloadPrompt";
 export default function App() {
   return (
     <LanguageProvider>
-      {/* New bright background gradient and global text styling */}
       <div className="relative min-h-screen bg-bg-pink bg-gradient-to-br from-bg-pink to-bg-cyan text-white text-shadow-outline-purple flex flex-col overflow-x-hidden font-poppins">
         
         <Tabs />
@@ -45,8 +44,8 @@ export default function App() {
               <Route path="profile" element={<ProfileSettingsPage />} />
             </Route>
 
-            {/* Protected Admin Route */}
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></Route>} />
+            {/* Protected Admin Route - CORRECTED LINE */}
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
           </Routes>
         </main>
