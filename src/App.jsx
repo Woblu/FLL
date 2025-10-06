@@ -24,13 +24,11 @@ export default function App() {
     <LanguageProvider>
       <div className="relative min-h-screen bg-[#1a001a] text-white text-shadow-outline-purple flex flex-col overflow-x-hidden font-poppins">
         
-        {/* Decorations are now children of the main dark container */}
         <div className="side-decoration left"></div>
         <div className="side-decoration right"></div>
         
         <Tabs />
 
-        {/* Added padding here to create space for the decorations */}
         <main className="flex-grow p-4 pl-[300px] pr-[300px] w-full max-w-7xl mx-auto z-10">
           <Routes>
             {/* Core Public Routes */}
@@ -49,8 +47,8 @@ export default function App() {
               <Route path="profile" element={<ProfileSettingsPage />} />
             </Route>
 
-            {/* Protected Admin Route */}
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></Route>} />
+            {/* Protected Admin Route - CORRECTED LINE */}
+            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
           </Routes>
         </main>
