@@ -28,6 +28,8 @@ body {
 
 .side-decoration.right {
   right: 0;
+  /* --- FIX: Aligns the background image to the right side of its container --- */
+  background-position: right top;
 }
 
 
