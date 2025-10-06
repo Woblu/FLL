@@ -49,3 +49,47 @@
 .dark .custom-scrollbar {
   scrollbar-color: #22d3ee #1f2937; /* thumb color and track color (cyan-400 gray-800) */
 }
+
+/* --- New Styles for Background and Decorations --- */
+
+body {
+  /* Set the vibrant neon pink background */
+  background-color: #f500bd; 
+}
+
+/* This is the container for your main content. 
+  The margins push it away from the fixed sidebars.
+  The z-index ensures it sits above the background but below any modals.
+*/
+.main-content-area {
+  margin: 0 150px; /* Adjust 150px to the width of your decoration image */
+  position: relative;
+  z-index: 1;
+  background-color: #1a001a; /* Optional: A dark background for the content area for contrast */
+  min-height: 100vh;
+}
+
+/* This styles the decorative sidebars.
+  - position: fixed keeps them in place during scroll.
+  - background-image points to your asset.
+  - background-repeat: repeat-y makes the image tile vertically.
+*/
+.side-decoration {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 150px; /* Adjust this to the actual width of your image */
+  background-image: url('/src/assets/c9b562fc33dfe9e93230abab38e1ef32.webp');
+  background-repeat: repeat-y;
+  background-size: contain; /* Ensures the image fits within the width */
+  z-index: 0;
+}
+
+/* Positions each sidebar */
+.side-decoration.left {
+  left: 0;
+}
+
+.side-decoration.right {
+  right: 0;
+}
