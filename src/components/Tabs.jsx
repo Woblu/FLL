@@ -13,27 +13,28 @@ export default function Tabs() {
   const navLinkClasses = ({ isActive }) => 
     `px-4 py-2 rounded-md font-semibold transition-all duration-300 text-sm whitespace-nowrap flex items-center gap-2
     ${isActive 
-      ? "text-white scale-105" 
-      : "text-gray-300 hover:text-white"
+      ? "text-gray-900 dark:text-white scale-105" 
+      : "text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
     }`;
+    
+  const buttonClasses = "flex items-center gap-2 px-3 py-2 rounded-md font-semibold border text-sm transition-all duration-300 bg-white dark:bg-ui-bg/50 border-gray-300 dark:border-accent/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-ui-bg/80 hover:border-gray-400 dark:hover:border-accent";
 
   return (
     <>
-      <header className="sticky top-0 bg-gd-black/80 backdrop-blur-md z-30 border-b border-gd-purple">
-        {/* This container is now full-width, allowing content to go to the edges */}
-        <div className="flex items-center justify-between px-4 py-3">
+      <header className="sticky top-0 bg-white/80 dark:bg-ui-bg/80 backdrop-blur-md z-30 border-b border-gray-200 dark:border-accent/30">
+        <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
           {/* Left Side: Logo and Title */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center gap-3 group">
               <img src={logo} alt="FLL Logo" className="w-9 h-9 transition-transform duration-300 group-hover:scale-110" />
               <div>
-                <span className="font-bold text-xl transition-all duration-300">The FLL</span>
+                <span className="font-bold text-xl text-gray-900 dark:text-white transition-all duration-300">The FLL</span>
               </div>
             </Link>
           </div>
 
           {/* Center: Main Navigation */}
-          <nav className="hidden md:flex items-center gap-2">
+          <nav className="hidden md:flex flex-1 justify-center items-center gap-2">
              <NavLink to="/" end className={navLinkClasses}>
                 The FLL
               </NavLink>
@@ -51,7 +52,7 @@ export default function Tabs() {
             <button 
               title="FLL Stats Viewer" 
               onClick={() => setIsStatsViewerOpen(true)} 
-              className="flex items-center gap-2 px-3 py-2 rounded-md font-semibold bg-gd-purple/50 border border-gd-purple hover:bg-gd-purple/80 hover:border-gd-pink text-white transition-all duration-300 text-sm"
+              className={buttonClasses}
             >
               <BarChart2 className="w-4 h-4" />
               <span className="hidden md:inline">FLL Stats Viewer</span>
@@ -61,10 +62,10 @@ export default function Tabs() {
               <SettingsMenu />
             ) : (
               <div className="hidden sm:flex items-center gap-2">
-                <Link to="/login" className="flex items-center gap-2 px-3 py-2 rounded-md font-semibold bg-gd-purple/50 border border-gd-purple hover:bg-gd-purple/80 hover:border-gd-pink text-white transition-all duration-300 text-sm">
+                <Link to="/login" className={buttonClasses}>
                   <LogIn className="w-4 h-4" /> Login
                 </Link>
-                <Link to="/register" className="flex items-center gap-2 px-3 py-2 rounded-md font-semibold bg-gradient-to-r from-gd-pink to-cyan-500 text-white hover:opacity-90 transition-opacity hover:scale-105">
+                <Link to="/register" className="flex items-center gap-2 px-3 py-2 rounded-md font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-all hover:scale-105">
                   <UserPlus className="w-4 h-4" /> Register
                 </Link>
               </div>

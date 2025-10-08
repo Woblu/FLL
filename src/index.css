@@ -4,8 +4,8 @@
 
 @layer base {
   body {
-    /* Apply the new background and default text color */
-    @apply bg-primary-bg text-text-primary;
+    /* Apply a white background and dark text for light mode, and the violet theme for dark mode */
+    @apply bg-white text-gray-800 dark:bg-primary-bg dark:text-text-primary;
   }
 }
 
@@ -16,7 +16,7 @@
   width: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #1c0f33; /* ui-bg */
+  background: #e2e8f0; /* light-gray for light mode */
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: #9c27b0; /* accent */
@@ -26,12 +26,12 @@
   background-color: #af4fb9; /* A slightly lighter accent for hover */
 }
 
-/* Dark mode scrollbar is the same as light mode in this theme */
+/* Dark mode scrollbar styles */
 .dark .custom-scrollbar::-webkit-scrollbar-track {
-  background: #1c0f33;
+  background: #1c0f33; /* ui-bg */
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #9c27b0;
+  background-color: #9c27b0; /* accent */
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #af4fb9;
@@ -40,10 +40,10 @@
 /* For Firefox */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #9c27b0 #1c0f33; /* thumb color and track color */
+  scrollbar-color: #9c27b0 #e2e8f0; /* thumb color and track color for light mode */
 }
 
 /* Dark mode adjustments for Firefox scrollbar */
 .dark .custom-scrollbar {
-  scrollbar-color: #9c27b0 #1c0f33;
+  scrollbar-color: #9c27b0 #1c0f33; /* thumb color and track color for dark mode */
 }

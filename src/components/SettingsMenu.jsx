@@ -30,36 +30,55 @@ export default function SettingsMenu() {
 
   if (!user) return null;
 
+  const buttonClasses = "flex items-center gap-2 px-3 py-2 rounded-md font-semibold border text-sm transition-all duration-300 bg-white dark:bg-ui-bg/50 border-gray-300 dark:border-accent/30 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-ui-bg/80 hover:border-gray-400 dark:hover:border-accent";
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-md font-semibold bg-brand-purple/50 dark:bg-fll-dark border border-brand-purple hover:bg-brand-purple/80 hover:border-fll-pink transition-all duration-300 text-sm text-white"
+        className={buttonClasses}
         aria-label="Settings and user menu"
       >
         <Settings className="w-5 h-5" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-fll-dark/90 backdrop-blur-md border border-brand-purple rounded-lg shadow-2xl py-1 z-50">
-          <div className="px-4 py-2 text-sm text-gray-300 border-b border-brand-purple/50">
+        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-ui-bg/90 backdrop-blur-md border border-gray-200 dark:border-accent/30 rounded-lg shadow-2xl py-1 z-50">
+          <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-300 border-b border-gray-200 dark:border-accent/50">
             Signed in as <strong>{user.username}</strong>
           </div>
-          <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-300">
+
+          <div className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
             <span>{t('darkMode')}</span>
             <ThemeToggle />
           </div>
-          <div className="border-t border-brand-purple/50 my-1"></div>
-          <Link to="/account" onClick={() => setIsOpen(false)} className="flex items-center w-full gap-3 px-4 py-2 text-gray-300 hover:bg-brand-purple/50 transition-colors text-sm">
+
+          <div className="border-t border-gray-200 dark:border-accent/50 my-1"></div>
+
+          <Link
+            to="/account"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center w-full gap-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-accent/50 transition-colors text-sm"
+          >
             <User className="w-4 h-4" /> {t('myAccount')}
           </Link>
+
           {user?.role === 'ADMIN' && (
-            <Link to="/admin" onClick={() => setIsOpen(false)} className="flex items-center w-full gap-3 px-4 py-2 text-gray-300 hover:bg-brand-purple/50 transition-colors text-sm">
+            <Link
+              to="/admin"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center w-full gap-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-accent/50 transition-colors text-sm"
+            >
               <LayoutDashboard className="w-4 h-4" /> {t('adminDashboard')}
             </Link>
           )}
-          <div className="border-t border-brand-purple/50 my-1"></div>
-          <button onClick={handleLogout} className="flex items-center gap-3 w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-500/20 transition-colors">
+
+          <div className="border-t border-gray-200 dark:border-accent/50 my-1"></div>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors"
+          >
             <LogOut className="w-4 h-4" /> {t('logout')}
           </button>
         </div>
