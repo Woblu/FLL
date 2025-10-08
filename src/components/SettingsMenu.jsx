@@ -41,7 +41,8 @@ export default function SettingsMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-fll-dark/90 backdrop-blur-md border border-brand-purple rounded-lg shadow-2xl py-1 z-50">
+        // The z-index is increased to ensure it's on top of all other content
+        <div className="absolute right-0 mt-2 w-56 bg-fll-dark/90 backdrop-blur-md border border-brand-purple rounded-lg shadow-2xl py-1 z-[999]">
           <div className="px-4 py-2 text-sm text-gray-300 border-b border-brand-purple/50">
             Signed in as <strong>{user.username}</strong>
           </div>

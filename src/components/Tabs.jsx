@@ -20,9 +20,10 @@ export default function Tabs() {
   return (
     <>
       <header className="sticky top-0 bg-gd-black/80 backdrop-blur-md z-30 border-b border-gd-purple">
-        <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
-          {/* Left Side: Logo and Title (flex-1 removed) */}
-          <div className="flex justify-start">
+        {/* Parent container is now relative for positioning context */}
+        <div className="relative flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
+          {/* Left Side: Logo and Title */}
+          <div className="flex-shrink-0">
             <Link to="/" className="flex items-center gap-3 group">
               <img src={logo} alt="FLL Logo" className="w-9 h-9 transition-transform duration-300 group-hover:scale-110" />
               <div>
@@ -31,8 +32,8 @@ export default function Tabs() {
             </Link>
           </div>
 
-          {/* Center: Main Navigation */}
-          <nav className="hidden md:flex flex-1 justify-center items-center gap-2">
+          {/* Center: Main Navigation (Now absolutely positioned) */}
+          <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-2">
              <NavLink to="/" end className={navLinkClasses}>
                 The FLL
               </NavLink>
@@ -45,8 +46,8 @@ export default function Tabs() {
             )}
           </nav>
 
-          {/* Right Side: Actions (flex-1 removed) */}
-          <div className="flex justify-end items-center gap-2">
+          {/* Right Side: Actions */}
+          <div className="flex-shrink-0 flex items-center gap-2">
             <button 
               title="FLL Stats Viewer" 
               onClick={() => setIsStatsViewerOpen(true)} 
