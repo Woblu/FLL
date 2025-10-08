@@ -1,10 +1,6 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-
-// Import your image asset
 import sideDeco from "./assets/c9b562fc33dfe9e93230abab38e1ef32.webp";
-
-// Core Pages
 import Home from "./pages/Home";
 import LevelDetail from "./pages/LevelDetail";
 import LoginPage from "./pages/LoginPage";
@@ -14,40 +10,45 @@ import ProfileSettingsPage from './pages/account/ProfileSettingsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import GuidelinesPage from './pages/GuidelinesPage';
 import SubmitLevelPage from './pages/SubmitLevelPage';
-
-// Core Components
 import Tabs from "./components/Tabs";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import { LanguageProvider } from "./contexts/LanguageContext.jsx";
-// --- NEW: Import ThemeProvider ---
 import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 import ReloadPrompt from "./components/ReloadPrompt";
 
 export default function App() {
   return (
-    // --- NEW: Wrap with ThemeProvider ---
     <ThemeProvider>
       <LanguageProvider>
-        <div className="relative min-h-screen text-white flex flex-col overflow-x-hidden font-poppins">
+        <div className="relative min-h-screen flex flex-col overflow-x-hidden font-poppins">
           
+          {/* Decorations are in the background layer */}
           <div 
             className="hidden lg:block absolute left-0 top-0 h-full w-32 xl:w-48 opacity-20 z-10 pointer-events-none"
             style={{ 
               backgroundImage: `url(${sideDeco})`, 
-              backgroundRepeat: "repeat-y",
               transform: "scaleX(-1)" 
             }}
           ></div>
-          
-          <div className="relative z-20">
+          <div 
+            className="hidden lg:block absolute right-0 top-0 h-full w-32 xl:w-48 opacity-20 z-10 pointer-events-none"
+            style={{ 
+              backgroundImage: `url(${sideDeco})`
+            }}
+          ></div>
+
+          {/* Header is given the highest z-index to ensure it and its children (the dropdown) are on top */}
+          <div className="relative z-30">
             <Tabs />
           </div>
 
-          <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-20">
+          {/* Main content sits in the middle layer */}
+          <main className="relative z-20 flex-grow p-4 w-full max-w-7xl mx-auto">
             <Routes>
               {/* Core Public Routes */}
               <Route path="/" element={<Home />} />
+              <Route path="/:listType" element={<Home />} />
               <Route path="/level/:listType/:levelId" element={<LevelDetail />} />
               <Route path="/guidelines" element={<GuidelinesPage />} />
               
@@ -66,14 +67,6 @@ export default function App() {
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             </Routes>
           </main>
-          
-          <div 
-            className="hidden lg:block absolute right-0 top-0 h-full w-32 xl:w-48 opacity-20 z-10 pointer-events-none"
-            style={{ 
-              backgroundImage: `url(${sideDeco})`, 
-              backgroundRepeat: "repeat-y"
-            }}
-          ></div>
           
           <ReloadPrompt />
         </div>
