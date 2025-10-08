@@ -20,60 +20,64 @@ import Tabs from "./components/Tabs";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import { LanguageProvider } from "./contexts/LanguageContext.jsx";
+// --- NEW: Import ThemeProvider ---
+import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 import ReloadPrompt from "./components/ReloadPrompt";
 
 export default function App() {
   return (
-    <LanguageProvider>
-      {/* The main container no longer has a hardcoded background color */}
-      <div className="relative min-h-screen text-white flex flex-col overflow-x-hidden font-poppins">
-        
-        <div 
-          className="hidden lg:block absolute left-0 top-0 h-full w-32 xl:w-48 opacity-20 z-10 pointer-events-none"
-          style={{ 
-            backgroundImage: `url(${sideDeco})`, 
-            backgroundRepeat: "repeat-y",
-            transform: "scaleX(-1)" 
-          }}
-        ></div>
-        
-        <div className="relative z-20">
-          <Tabs />
+    // --- NEW: Wrap with ThemeProvider ---
+    <ThemeProvider>
+      <LanguageProvider>
+        <div className="relative min-h-screen text-white flex flex-col overflow-x-hidden font-poppins">
+          
+          <div 
+            className="hidden lg:block absolute left-0 top-0 h-full w-32 xl:w-48 opacity-20 z-10 pointer-events-none"
+            style={{ 
+              backgroundImage: `url(${sideDeco})`, 
+              backgroundRepeat: "repeat-y",
+              transform: "scaleX(-1)" 
+            }}
+          ></div>
+          
+          <div className="relative z-20">
+            <Tabs />
+          </div>
+
+          <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-20">
+            <Routes>
+              {/* Core Public Routes */}
+              <Route path="/" element={<Home />} />
+              <Route path="/level/:listType/:levelId" element={<LevelDetail />} />
+              <Route path="/guidelines" element={<GuidelinesPage />} />
+              
+              {/* Auth Routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              
+              {/* Protected User Routes */}
+              <Route path="/submit-level" element={<ProtectedRoute><SubmitLevelPage /></ProtectedRoute>} />
+              <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>}>
+                <Route index element={<Navigate to="profile" replace />} />
+                <Route path="profile" element={<ProfileSettingsPage />} />
+              </Route>
+
+              {/* Protected Admin Route */}
+              <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            </Routes>
+          </main>
+          
+          <div 
+            className="hidden lg:block absolute right-0 top-0 h-full w-32 xl:w-48 opacity-20 z-10 pointer-events-none"
+            style={{ 
+              backgroundImage: `url(${sideDeco})`, 
+              backgroundRepeat: "repeat-y"
+            }}
+          ></div>
+          
+          <ReloadPrompt />
         </div>
-
-        <main className="flex-grow p-4 w-full max-w-7xl mx-auto z-20">
-          <Routes>
-            {/* Core Public Routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/level/:listType/:levelId" element={<LevelDetail />} />
-            <Route path="/guidelines" element={<GuidelinesPage />} />
-            
-            {/* Auth Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            
-            {/* Protected User Routes */}
-            <Route path="/submit-level" element={<ProtectedRoute><SubmitLevelPage /></ProtectedRoute>} />
-            <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>}>
-              <Route index element={<Navigate to="profile" replace />} />
-              <Route path="profile" element={<ProfileSettingsPage />} />
-            </Route>
-
-            {/* Protected Admin Route */}
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          </Routes>
-        </main>
-        
-        <div 
-          className="hidden lg:block absolute right-0 top-0 h-full w-32 xl:w-48 opacity-20 z-10 pointer-events-none"
-          style={{ 
-            backgroundImage: `url(${sideDeco})`, 
-            backgroundRepeat: "repeat-y"
-          }}
-        ></div>
-        
-        <ReloadPrompt />
-      </div>
-    </LanguageProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }

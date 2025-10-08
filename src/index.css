@@ -2,10 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* This tells the body to use your theme colors for its background */
+/* This tells the body to use a white or black background */
 @layer base {
   body {
-    @apply bg-brand-pink dark:bg-brand-black;
+    /* --- THIS LINE IS UPDATED --- */
+    @apply bg-white dark:bg-black;
   }
 }
 
@@ -18,7 +19,6 @@
 
 .custom-scrollbar::-webkit-scrollbar-track {
   background: #f0f9ff; /* light-blue-50 - Color of the tracking area */
-  border-radius: 8px; /* Slightly rounded track */
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {

@@ -1,70 +1,64 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Settings, LogOut, User, LayoutDashboard } from "lucide-react";
-import { useAuth } from "../contexts/AuthContext.jsx";
-import { useLanguage } from "../contexts/LanguageContext.jsx";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import ThemeToggle from './ThemeToggle'; // Import the new ThemeToggle component
 
-export default function SettingsMenu() {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
+export default function SettingsMenu({ user, onClose }) {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const { t } = useLanguage();
 
   const handleLogout = () => {
     logout();
-    setIsOpen(false);
+    onClose();
     navigate('/');
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const handleMyAccount = () => {
+    onClose();
+    navigate('/account');
+  };
+
+  const handleAdminDashboard = () => {
+    onClose();
+    navigate('/admin');
+  };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="absolute right-0 mt-2 w-48 bg-fllDark rounded-md shadow-lg py-1 z-50">
+      <div className="block px-4 py-2 text-sm text-gray-300 border-b border-fllPurple/50">
+        {user ? user.username : 'Guest'}
+      </div>
+      
+      {/* --- NEW: Dark Mode Toggle --- */}
+      <div className="flex items-center justify-between px-4 py-2">
+        <span className="text-gray-300 text-sm">{t('darkMode')}</span>
+        <ThemeToggle />
+      </div>
+
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 rounded-md font-semibold bg-gd-purple/50 border border-gd-purple hover:bg-gd-purple/80 hover:border-gd-pink transition-all duration-300 text-sm"
-        aria-label="Settings and user menu"
+        onClick={handleMyAccount}
+        className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-fllPurple"
       >
-        <Settings className="w-4 h-4" />
-        <span className="hidden md:inline">{user?.username || 'User'}</span>
+        {t('myAccount')}
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-gd-black/90 backdrop-blur-md border border-gd-purple rounded-lg shadow-2xl py-1 z-50">
-          <Link
-            to="/account"
-            onClick={() => setIsOpen(false)}
-            className="flex items-center w-full gap-3 px-4 py-2 hover:bg-gd-purple/50 transition-colors text-sm"
-          >
-            <User className="w-4 h-4" /> {t('my_account')}
-          </Link>
-          {user?.role === 'ADMIN' && (
-            <Link
-              to="/admin"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center w-full gap-3 px-4 py-2 hover:bg-gd-purple/50 transition-colors text-sm"
-            >
-              <LayoutDashboard className="w-4 h-4" /> Admin Dashboard
-            </Link>
-          )}
-          <div className="border-t border-gd-purple/50 my-1"></div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 w-full text-left px-4 py-2 text-sm font-semibold bg-gradient-to-r from-gd-pink to-cyan-500 text-white hover:opacity-90 transition-opacity text-shadow-none"
-          >
-            <LogOut className="w-4 h-4" /> {t('logout')}
-          </button>
-        </div>
+      {user?.isAdmin && (
+        <button
+          onClick={handleAdminDashboard}
+          className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-fllPurple"
+        >
+          {t('adminDashboard')}
+        </button>
       )}
+
+      <button
+        onClick={handleLogout}
+        className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-500/20"
+      >
+        {t('logout')}
+      </button>
     </div>
   );
 }
