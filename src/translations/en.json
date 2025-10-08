@@ -2,7 +2,7 @@
   "myAccount": "Account",
   "adminDashboard": "Admin Dashboard",
   "logout": "Logout",
-  "darkMode": "Dark Mode"
+  "darkMode": "Dark Mode",
   "back_to_home": "Back",
   "player_not_found": "Player Not Found",
   "player_not_found_message": "The requested player could not be found.",
