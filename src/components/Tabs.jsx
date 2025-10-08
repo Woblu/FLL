@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { BarChart2, LogIn, Settings, UserPlus, Upload } from "lucide-react";
+import { BarChart2, LogIn, UserPlus, Upload } from "lucide-react";
 import logo from "../assets/dashrank-logo.webp";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import StatsViewer from "./StatsViewer";
@@ -10,7 +10,6 @@ export default function Tabs() {
   const { user } = useAuth();
   const [isStatsViewerOpen, setIsStatsViewerOpen] = useState(false);
 
-  // NavLink styles now focus on brightness/opacity for the active state
   const navLinkClasses = ({ isActive }) => 
     `px-4 py-2 rounded-md font-semibold transition-all duration-300 text-sm whitespace-nowrap flex items-center gap-2
     ${isActive 
@@ -22,8 +21,8 @@ export default function Tabs() {
     <>
       <header className="sticky top-0 bg-gd-black/80 backdrop-blur-md z-30 border-b border-gd-purple">
         <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
-          {/* Left Side: Logo and Title */}
-          <div className="flex-1 flex justify-start">
+          {/* Left Side: Logo and Title (flex-1 removed) */}
+          <div className="flex justify-start">
             <Link to="/" className="flex items-center gap-3 group">
               <img src={logo} alt="FLL Logo" className="w-9 h-9 transition-transform duration-300 group-hover:scale-110" />
               <div>
@@ -46,8 +45,8 @@ export default function Tabs() {
             )}
           </nav>
 
-          {/* Right Side: Actions */}
-          <div className="flex-1 flex justify-end items-center gap-2">
+          {/* Right Side: Actions (flex-1 removed) */}
+          <div className="flex justify-end items-center gap-2">
             <button 
               title="FLL Stats Viewer" 
               onClick={() => setIsStatsViewerOpen(true)} 
