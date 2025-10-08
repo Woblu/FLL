@@ -20,8 +20,8 @@ export default function Tabs() {
   return (
     <>
       <header className="sticky top-0 bg-gd-black/80 backdrop-blur-md z-30 border-b border-gd-purple">
-        {/* Parent container is now relative for positioning context */}
-        <div className="relative flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
+        {/* This container is now full-width, allowing content to go to the edges */}
+        <div className="flex items-center justify-between px-4 py-3">
           {/* Left Side: Logo and Title */}
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center gap-3 group">
@@ -32,8 +32,8 @@ export default function Tabs() {
             </Link>
           </div>
 
-          {/* Center: Main Navigation (Now absolutely positioned) */}
-          <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-2">
+          {/* Center: Main Navigation */}
+          <nav className="hidden md:flex items-center gap-2">
              <NavLink to="/" end className={navLinkClasses}>
                 The FLL
               </NavLink>
