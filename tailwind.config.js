@@ -10,16 +10,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        // --- Corrected Neon Theme ---
-        'brand-pink': '#FF00FF',     // Pure Neon Pink for the main background
-        'brand-cyan': '#00FFFF',     // Neon cyan for gradients/accents
-        'brand-purple': '#4D0075',  // A deep purple for outlines and dark UI
-        'brand-black': '#000000',     // Pure Black for dark mode background
-        'fll-dark': '#0D021A',     // Dark, purple-tinted black for UI panels
-        'fll-pink': '#F900B8',      // A saturated pink for highlights
+        // --- New Violet/Indigo Theme ---
+        'primary-bg': '#10081c',      // Deep indigo/violet for the main background
+        'ui-bg': '#1c0f33',          // A slightly lighter purple for UI panels, headers, etc.
+        'accent': '#9c27b0',          // Bright, saturated purple for highlights and glows
+        'text-primary': '#ffffff',    // Pure white for main text
+        'text-secondary': '#a0aec0', // A light gray for secondary text
       },
+      // Updated text shadow to use the new accent color
       textShadow: {
-        'outline-purple': '0 0 5px #4D0075, -1px -1px 3px #4D0075, 1px -1px 3px #4D0075, -1px 1px 3px #4D0075, 1px 1px 3px #4D0075',
+        'outline': '0 0 8px #9c27b0, -1px -1px 5px #9c27b0, 1px -1px 5px #9c27b0, -1px 1px 5px #9c27b0, 1px 1px 5px #9c27b0',
       },
       fontFamily: {
         'poppins': ['Poppins', 'sans-serif'],
