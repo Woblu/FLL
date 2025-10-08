@@ -22,19 +22,18 @@ export default function Tabs() {
   return (
     <>
       <header className="sticky top-0 bg-white/80 dark:bg-ui-bg/80 backdrop-blur-md z-30 border-b border-gray-200 dark:border-accent/30">
-        <div className="flex items-center justify-between px-4 py-3 max-w-7xl mx-auto">
-          {/* Left Side: Logo and Title */}
-          <div className="flex-shrink-0">
-            <Link to="/" className="flex items-center gap-3 group">
+        {/* THIS CONTAINER IS NOW FULL-WIDTH. 'max-w-7xl mx-auto' have been removed. */}
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Left Side */}
+          <div className="flex items-center gap-3 group">
+            <Link to="/" className="flex items-center gap-3">
               <img src={logo} alt="FLL Logo" className="w-9 h-9 transition-transform duration-300 group-hover:scale-110" />
-              <div>
-                <span className="font-bold text-xl text-gray-900 dark:text-white transition-all duration-300">The FLL</span>
-              </div>
+              <span className="font-bold text-xl text-gray-900 dark:text-white">The FLL</span>
             </Link>
           </div>
 
-          {/* Center: Main Navigation */}
-          <nav className="hidden md:flex flex-1 justify-center items-center gap-2">
+          {/* Center Navigation */}
+          <nav className="hidden md:flex items-center gap-2">
              <NavLink to="/" end className={navLinkClasses}>
                 The FLL
               </NavLink>
@@ -47,8 +46,8 @@ export default function Tabs() {
             )}
           </nav>
 
-          {/* Right Side: Actions */}
-          <div className="flex-shrink-0 flex items-center gap-2">
+          {/* Right Side */}
+          <div className="flex items-center gap-2">
             <button 
               title="FLL Stats Viewer" 
               onClick={() => setIsStatsViewerOpen(true)} 
