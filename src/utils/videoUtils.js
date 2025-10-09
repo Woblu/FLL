@@ -17,21 +17,20 @@ export const getVideoDetails = (url) => {
     const videoId = youtubeMatch[1].substring(0, 11);
     return {
       source: 'youtube',
-      // --- FIX: Using youtube-nocookie.com for embeds ---
       embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}`,
       thumbnailUrl: `https://img.youtube.com/vi/${videoId}/0.jpg`,
     };
   }
 
   // 2. Medal.tv
-  // --- FIX: Regex now accepts '/clips/' (plural) ---
   const medalRegex = /medal\.tv\/(?:games\/[^\/]+\/)?clips?\/([^\/]+)/;
   const medalMatch = url.match(medalRegex);
   if (medalMatch && medalMatch[1]) {
     const clipId = medalMatch[1];
     return {
       source: 'medal',
-      embedUrl: `https://medal.tv/clip/${clipId}/iframe`,
+      // --- FIX: Using the correct public embed URL for Medal.tv ---
+      embedUrl: `https://medal.tv/e/c/${clipId}`,
       thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=Medal.tv+Clip',
     };
   }
