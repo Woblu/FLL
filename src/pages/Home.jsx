@@ -123,6 +123,20 @@ export default function Home() {
   useEffect(() => {
     fetchLevels();
   }, [currentListType, token]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      if (currentListType !== 'progression') {
+        fetchLevels();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [currentListType]);
   
   const filteredLevels = levels.filter(level => {
     const searchTerm = search.toLowerCase();
