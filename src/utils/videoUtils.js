@@ -1,12 +1,14 @@
-// This function will analyze a URL and return a standardized object 
-// with the video source, an embeddable URL, and a thumbnail URL.
-
+/**
+ * This function analyzes a URL and returns a standardized object with the
+ * video source, an embeddable URL, a thumbnail URL, and the player type.
+ */
 export const getVideoDetails = (url) => {
   if (!url) {
     return { 
       source: 'unknown', 
       embedUrl: null, 
-      thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=No+Preview' 
+      thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=No+Preview',
+      type: null
     };
   }
 
@@ -24,13 +26,15 @@ export const getVideoDetails = (url) => {
   }
 
   // 2. Medal.tv (Corrected Logic)
-  const medalRegex = /medal\.tv\/(?:games\/[^\/]+\/)?clips?\/([^\/]+)/;
+  // The regex now correctly finds the clip ID from various URL formats.
+  const medalRegex = /medal\.tv\/(?:games\/[^\/]+\/)?clips?\/([a-zA-Z0-9_-]+)/;
   const medalMatch = url.match(medalRegex);
   if (medalMatch && medalMatch[1]) {
     const clipId = medalMatch[1];
     return {
       source: 'medal',
-      embedUrl: `https://medal.tv/e/c/${clipId}`,
+      // This is the official, publicly-facing embed URL format.
+      embedUrl: `https://medal.tv/clip/${clipId}/iframe`,
       thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=Medal.tv+Clip',
       type: 'iframe'
     };
@@ -53,12 +57,16 @@ export const getVideoDetails = (url) => {
   try {
     const urlObject = new URL(url);
     if (urlObject.pathname.endsWith('.mp4')) {
-      return { url, type: 'video' };
+      return { 
+        source: 'direct',
+        embedUrl: url, 
+        thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=MP4+Video',
+        type: 'video' 
+      };
     }
   } catch (e) {
-    // Not a valid URL, ignore
+    // Not a valid URL, will be caught by the fallback.
   }
-
 
   // 5. Fallback for unknown URLs
   return { 
