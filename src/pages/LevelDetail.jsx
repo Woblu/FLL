@@ -27,7 +27,9 @@ export default function LevelDetail() {
     setError(null);
     setHistory([]);
     try {
-      const levelResponse = await axios.get(`/api/level/${levelId}?list=${listType}`);
+      // --- THIS LINE IS FIXED ---
+      // Re-added '-list' to the listType to match the API and database
+      const levelResponse = await axios.get(`/api/level/${levelId}?list=${listType}-list`);
       setLevel(levelResponse.data);
       
       if (levelResponse.data?.videoId) {
