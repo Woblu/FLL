@@ -9,8 +9,8 @@ export default function ListManager() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     
-    // Hardcoded to the single list for this site
-    const listToManage = 'fll-list';
+    // FIX #1: Hardcoded list name changed to 'main-list'
+    const listToManage = 'main-list';
 
     const fetchLevels = async () => {
         setIsLoading(true);
@@ -25,8 +25,16 @@ export default function ListManager() {
         }
     };
 
+    // This effect fetches data when the component first loads
     useEffect(() => {
         fetchLevels();
+    }, []);
+
+    // FIX #2: This effect re-fetches data whenever the user returns to the tab
+    useEffect(() => {
+        const handleFocus = () => fetchLevels();
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
     }, []);
 
     const handleRemove = async (levelId) => {
@@ -43,7 +51,6 @@ export default function ListManager() {
     };
     
     const handleMove = async (levelId, newPlacement) => {
-        // Prevent moving the top level further up
         if (newPlacement < 1) return;
         
         try {
@@ -58,25 +65,25 @@ export default function ListManager() {
     };
 
     return (
-        <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+        <div className="bg-white dark:bg-ui-bg/50 p-6 rounded-xl border border-gray-200 dark:border-accent/30">
             {isLoading && <p className="animate-pulse text-center">Loading levels...</p>}
             {error && <p className="text-red-500 text-center">{error}</p>}
             
             {!isLoading && !error && (
                 <div className="space-y-2">
                     {levels.map((level) => (
-                        <div key={level.id} className="grid grid-cols-12 gap-4 items-center p-3 bg-gray-700/50 rounded-lg">
-                            <span className="font-bold text-lg text-cyan-400 col-span-1">#{level.placement}</span>
-                            <span className="col-span-5 truncate">{level.name}</span>
-                            <span className="text-gray-400 col-span-3 truncate">by {level.creator}</span>
-                            <div className="flex justify-end items-center gap-2 col-span-3">
-                                <button onClick={() => handleMove(level.id, level.placement - 1)} className="p-1 hover:bg-gray-600 rounded-full" title="Move Up">
+                        <div key={level.id} className="grid grid-cols-12 gap-4 items-center p-3 bg-gray-50 dark:bg-ui-bg/30 rounded-lg">
+                            <span className="font-bold text-lg text-indigo-500 dark:text-cyan-400 col-span-1">#{level.placement}</span>
+                            <span className="col-span-5 truncate text-gray-800 dark:text-text-primary">{level.name}</span>
+                            <span className="text-gray-500 dark:text-text-secondary col-span-3 truncate">by {level.creator}</span>
+                            <div className="flex justify-end items-center gap-2 col-span-3 text-gray-600 dark:text-gray-300">
+                                <button onClick={() => handleMove(level.id, level.placement - 1)} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full" title="Move Up">
                                     <ChevronUp size={20} />
                                 </button>
-                                <button onClick={() => handleMove(level.id, level.placement + 1)} className="p-1 hover:bg-gray-600 rounded-full" title="Move Down">
+                                <button onClick={() => handleMove(level.id, level.placement + 1)} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full" title="Move Down">
                                     <ChevronDown size={20} />
                                 </button>
-                                <button onClick={() => handleRemove(level.id)} className="p-1 text-red-400 hover:bg-red-500/20 rounded-full" title="Remove Level">
+                                <button onClick={() => handleRemove(level.id)} className="p-1 text-red-500 dark:text-red-400 hover:bg-red-500/10 rounded-full" title="Remove Level">
                                     <Trash2 size={18} />
                                 </button>
                             </div>

@@ -1,67 +1,57 @@
-// src/utils/videoUtils.js
+// This function will analyze a URL and return a standardized object 
+// with the video source, an embeddable URL, and a thumbnail URL.
 
-/**
- * Transforms various video URLs into a usable embed URL.
- * @param {string} url The original video URL from any source.
- * @param {string} hostname The hostname of your website (e.g., 'dashrank.vercel.app').
- * @returns {{url: string, type: 'iframe' | 'video'} | null} An object with the embeddable URL and the type of player, or null if not embeddable.
- */
-export const getVideoEmbedUrl = (url, hostname) => {
-  if (!url) return null;
-
-  try {
-    const urlObject = new URL(url);
-
-    // YouTube
-    if (urlObject.hostname.includes('youtube.com') || urlObject.hostname.includes('youtu.be')) {
-      const videoId = urlObject.searchParams.get('v') || urlObject.pathname.split('/').pop();
-      if (videoId) {
-        return { url: `https://www.youtube-nocookie.com/embed/${videoId}`, type: 'iframe' };
-      }
-    }
-
-    // Twitch
-    if (urlObject.hostname.includes('twitch.tv')) {
-      const pathParts = urlObject.pathname.split('/').filter(Boolean);
-      if (pathParts[0] === 'videos') { // VOD
-        return { url: `https://player.twitch.tv/?video=${pathParts[1]}&parent=${hostname}&autoplay=false`, type: 'iframe' };
-      }
-      if (pathParts.length === 2) { // Clip (e.g., twitch.tv/user/clip/ID)
-        return { url: `https://clips.twitch.tv/embed?clip=${pathParts[2]}&parent=${hostname}&autoplay=false`, type: 'iframe' };
-      }
-      if (pathParts[0].includes('clip')) { // Clip shorthand (e.g., clips.twitch.tv/ID)
-        return { url: `https://clips.twitch.tv/embed?clip=${pathParts[1]}&parent=${hostname}&autoplay=false`, type: 'iframe' };
-      }
-    }
-
-    // Google Drive
-    if (urlObject.hostname.includes('drive.google.com')) {
-      const match = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-      if (match && match[1]) {
-        return { url: `https://drive.google.com/file/d/${match[1]}/preview`, type: 'iframe' };
-      }
-    }
-
-    // OneDrive
-    if (urlObject.hostname.includes('onedrive.live.com')) {
-      if (url.includes('/embed?')) {
-        return { url, type: 'iframe' }; // Already an embed link
-      }
-      if (url.includes('/redir?')) {
-        return { url: url.replace('/redir?', '/embed?'), type: 'iframe' };
-      }
-    }
-
-    // Direct MP4 Link (from Vercel Blob, etc.)
-    if (urlObject.pathname.endsWith('.mp4')) {
-      return { url, type: 'video' };
-    }
-
-  } catch (error) {
-    console.error("Could not parse URL:", url, error);
-    return null;
+export const getVideoDetails = (url) => {
+  if (!url) {
+    return { 
+      source: 'unknown', 
+      embedUrl: null, 
+      thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=No+Preview' 
+    };
   }
 
-  // If no match, we can't embed it
-  return null;
+  // 1. YouTube
+  const youtubeRegex = /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^?&\n]+)/;
+  const youtubeMatch = url.match(youtubeRegex);
+  if (youtubeMatch && youtubeMatch[1]) {
+    const videoId = youtubeMatch[1].substring(0, 11);
+    return {
+      source: 'youtube',
+      embedUrl: `https://www.youtube.com/embed/${videoId}`,
+      thumbnailUrl: `https://img.youtube.com/vi/${videoId}/0.jpg`,
+    };
+  }
+
+  // 2. Medal.tv
+  const medalRegex = /medal\.tv\/(?:games\/[^\/]+\/)?clip\/([^\/]+)/;
+  const medalMatch = url.match(medalRegex);
+  if (medalMatch && medalMatch[1]) {
+    const clipId = medalMatch[1];
+    return {
+      source: 'medal',
+      embedUrl: `https://medal.tv/clip/${clipId}/iframe`,
+      // Medal.tv does not provide a simple public thumbnail API like YouTube.
+      thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=Medal.tv+Clip',
+    };
+  }
+
+  // 3. Google Drive
+  const driveRegex = /drive\.google\.com\/(?:file\/d\/|open\?id=)([^\/&?]+)/;
+  const driveMatch = url.match(driveRegex);
+  if (driveMatch && driveMatch[1]) {
+    const fileId = driveMatch[1];
+    return {
+      source: 'googledrive',
+      embedUrl: `https://drive.google.com/file/d/${fileId}/preview`,
+      // Google Drive also does not provide a simple public thumbnail API.
+      thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=Google+Drive',
+    };
+  }
+
+  // 4. Fallback for unknown URLs
+  return { 
+    source: 'unknown', 
+    embedUrl: null, 
+    thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=Invalid+Link' 
+  };
 };
