@@ -35,7 +35,9 @@ export default function LevelCard({ level, index, listType, onEdit, onDelete, on
     if (listType === 'progression') {
       path = `/progression/${level.id}`;
     } else {
-      path = `/level/fll/${level.levelId || level.id}`;
+      // --- THIS LINE IS FIXED ---
+      // It now uses the dynamic 'listType' prop instead of the hardcoded 'fll'
+      path = `/level/${listType}/${level.levelId || level.id}`;
     }
     
     if (level.id || level.levelId) {
@@ -47,28 +49,29 @@ export default function LevelCard({ level, index, listType, onEdit, onDelete, on
     <div
       onClick={handleClick}
       className={`w-full rounded-xl shadow-lg p-4 flex flex-col sm:flex-row items-center gap-4 cursor-pointer
-        transition-all transform hover:-translate-y-1 hover:shadow-2xl hover:ring-2 hover:ring-accent
-        bg-ui-bg/50 border border-accent/30 backdrop-blur-sm`}
+        transition-all transform hover:-translate-y-1 hover:shadow-2xl 
+        bg-white border border-gray-200 hover:ring-2 hover:ring-indigo-400
+        dark:bg-ui-bg/50 dark:border-accent/30 dark:hover:ring-accent`}
     >
       <div className="w-full sm:w-40 aspect-video rounded-md overflow-hidden flex-shrink-0 relative">
         <img
-          src={thumbnailUrl || 'https://placehold.co/320x180/10081c/ffffff?text=No+Preview'}
+          src={thumbnailUrl || 'https://placehold.co/320x180/e2e8f0/334155?text=No+Preview'}
           alt={`${levelName} thumbnail`}
           className="w-full h-full object-cover"
         />
         {isPinned && listType === 'progression' && (
           <div className="absolute top-1 right-1 bg-yellow-400 p-1 rounded-full">
-            <Pin size={12} className="text-primary-bg"/>
+            <Pin size={12} className="text-gray-900"/>
           </div>
         )}
       </div>
 
       <div className="flex flex-col flex-grow text-center sm:text-left">
-        <h2 className="font-bold text-xl text-text-primary">
+        <h2 className="font-bold text-xl text-gray-900 dark:text-text-primary">
           {level.placement ? `#${level.placement} - ` : ''}{levelName}
         </h2>
         
-        <p className="text-text-secondary">
+        <p className="text-gray-500 dark:text-text-secondary">
             {`${t('by')} ${level.creator}`}
         </p>
       </div>
@@ -79,7 +82,7 @@ export default function LevelCard({ level, index, listType, onEdit, onDelete, on
             <button 
               type="button" 
               onClick={(e) => { e.stopPropagation(); onPin(isPinned ? null : level.id); }} 
-              className={`p-2 rounded-full ${isPinned ? 'text-yellow-400 bg-yellow-500/20' : 'text-gray-300 hover:bg-accent/20'}`}
+              className={`p-2 rounded-full ${isPinned ? 'text-yellow-400 bg-yellow-500/20' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-accent/20'}`}
               title={isPinned ? "Unpin Record" : "Pin Record"}
             >
               {isPinned ? <PinOff className="w-5 h-5" /> : <Pin className="w-5 h-5" />}
@@ -89,7 +92,7 @@ export default function LevelCard({ level, index, listType, onEdit, onDelete, on
             <button 
               type="button" 
               onClick={(e) => { e.stopPropagation(); onEdit(level); }} 
-              className="p-2 text-gray-300 hover:bg-accent/20 rounded-full"
+              className="p-2 text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-accent/20 rounded-full"
               title="Edit Record"
             >
               <Pencil className="w-5 h-5" />
