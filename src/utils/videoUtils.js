@@ -19,19 +19,20 @@ export const getVideoDetails = (url) => {
       source: 'youtube',
       embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}`,
       thumbnailUrl: `https://img.youtube.com/vi/${videoId}/0.jpg`,
+      type: 'iframe'
     };
   }
 
-  // 2. Medal.tv
+  // 2. Medal.tv (Corrected Logic)
   const medalRegex = /medal\.tv\/(?:games\/[^\/]+\/)?clips?\/([^\/]+)/;
   const medalMatch = url.match(medalRegex);
   if (medalMatch && medalMatch[1]) {
     const clipId = medalMatch[1];
     return {
       source: 'medal',
-      // --- FIX: Using the correct public embed URL for Medal.tv ---
       embedUrl: `https://medal.tv/e/c/${clipId}`,
       thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=Medal.tv+Clip',
+      type: 'iframe'
     };
   }
 
@@ -44,13 +45,26 @@ export const getVideoDetails = (url) => {
       source: 'googledrive',
       embedUrl: `https://drive.google.com/file/d/${fileId}/preview`,
       thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=Google+Drive',
+      type: 'iframe'
     };
   }
+  
+  // 4. Direct MP4 Link
+  try {
+    const urlObject = new URL(url);
+    if (urlObject.pathname.endsWith('.mp4')) {
+      return { url, type: 'video' };
+    }
+  } catch (e) {
+    // Not a valid URL, ignore
+  }
 
-  // 4. Fallback for unknown URLs
+
+  // 5. Fallback for unknown URLs
   return { 
     source: 'unknown', 
     embedUrl: null, 
-    thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=Invalid+Link' 
+    thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=Invalid+Link',
+    type: null
   };
 };
