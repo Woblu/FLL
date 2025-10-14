@@ -32,17 +32,28 @@ model User {
   levelSubmissions LevelSubmission[]
 }
 
+model LevelRecord {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  username  String
+  percent   Int
+  videoId   String
+  levelId   String @db.ObjectId
+  level     Level  @relation(fields: [levelId], references: [id])
+  createdAt DateTime @default(now())
+}
+
 model Level {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
   placement   Int
   name        String
   creator     String
   verifier    String
-  levelId     Int          @unique
+  levelId     Int            @unique
   videoId     String
   description String?
   list        String
   changes     ListChange[]
+  records     LevelRecord[]
   @@map("levels")
 }
 

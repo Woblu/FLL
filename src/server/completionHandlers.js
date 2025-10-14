@@ -27,14 +27,10 @@ export async function createCompletionSubmission(req, res, decodedToken) {
     }
 
     // Check if player already has a completion record for this level
-    const existingRecord = await prisma.level.findFirst({
+    const existingRecord = await prisma.levelRecord.findFirst({
       where: {
-        id: levelId,
-        records: {
-          some: {
-            username: player
-          }
-        }
+        levelId: levelId,
+        username: player
       }
     });
 
@@ -42,17 +38,21 @@ export async function createCompletionSubmission(req, res, decodedToken) {
       return res.status(400).json({ message: 'You already have a completion record for this level.' });
     }
 
-    // Add the completion record to the level
-    const updatedLevel = await prisma.level.update({
-      where: { id: levelId },
+    // Create the completion record
+    const newRecord = await prisma.levelRecord.create({
       data: {
-        records: {
-          push: {
-            username: player,
-            percent: percent,
-            videoId: videoUrl,
-          }
-        }
+        username: player,
+        percent: percent,
+        videoId: videoUrl,
+        levelId: levelId
+      }
+    });
+
+    // Fetch the updated level with records
+    const updatedLevel = await prisma.level.findUnique({
+      where: { id: levelId },
+      include: {
+        records: true
       }
     });
 
@@ -71,32 +71,43 @@ export async function createCompletionSubmission(req, res, decodedToken) {
  */
 export async function listUserCompletions(req, res, decodedToken) {
   try {
-    const completions = await prisma.level.findMany({
+    const completions = await prisma.levelRecord.findMany({
       where: {
-        records: {
-          some: {
-            username: decodedToken.username
-          }
-        }
+        username: decodedToken.username
       },
-      select: {
-        id: true,
-        name: true,
-        placement: true,
-        creator: true,
-        verifier: true,
-        records: {
-          where: {
-            username: decodedToken.username
+      include: {
+        level: {
+          select: {
+            id: true,
+            name: true,
+            placement: true,
+            creator: true,
+            verifier: true
           }
         }
       },
       orderBy: {
-        placement: 'asc'
+        level: {
+          placement: 'asc'
+        }
       }
     });
 
-    return res.status(200).json(completions);
+    // Transform the data to match the expected format
+    const transformedCompletions = completions.map(record => ({
+      id: record.level.id,
+      name: record.level.name,
+      placement: record.level.placement,
+      creator: record.level.creator,
+      verifier: record.level.verifier,
+      records: [{
+        username: record.username,
+        percent: record.percent,
+        videoId: record.videoId
+      }]
+    }));
+
+    return res.status(200).json(transformedCompletions);
   } catch (error) {
     console.error('List user completions error:', error);
     return res.status(500).json({ message: 'Internal server error.' });
@@ -109,11 +120,6 @@ export async function listUserCompletions(req, res, decodedToken) {
 export async function listAllCompletions(req, res) {
   try {
     const completions = await prisma.level.findMany({
-      where: {
-        records: {
-          some: {}
-        }
-      },
       include: {
         records: true
       },
@@ -140,24 +146,17 @@ export async function removeCompletionRecord(req, res) {
   }
 
   try {
-    const level = await prisma.level.findUnique({
-      where: { id: levelId },
-      select: { records: true }
-    });
-
-    if (!level) {
-      return res.status(404).json({ message: 'Level not found.' });
-    }
-
-    // Remove the specific record for this user
-    const updatedRecords = level.records.filter(record => record.username !== username);
-
-    await prisma.level.update({
-      where: { id: levelId },
-      data: {
-        records: updatedRecords
+    // Find and delete the specific record
+    const deletedRecord = await prisma.levelRecord.deleteMany({
+      where: {
+        levelId: levelId,
+        username: username
       }
     });
+
+    if (deletedRecord.count === 0) {
+      return res.status(404).json({ message: 'Completion record not found.' });
+    }
 
     return res.status(200).json({ message: 'Completion record removed successfully.' });
   } catch (error) {

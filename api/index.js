@@ -49,7 +49,12 @@ export default async function handler(req, res) {
 
     if (!list) { return res.status(400).json({ error: 'A list query parameter is required.' }); }
     try {
-      const level = await prisma.level.findFirst({ where: { levelId: levelId, list: list } });
+      const level = await prisma.level.findFirst({ 
+        where: { levelId: levelId, list: list },
+        include: {
+          records: true
+        }
+      });
       return level ? res.status(200).json(level) : res.status(404).json({ error: 'Level not found on this list' });
     } catch (error) {
       console.error(error);
