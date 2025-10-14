@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
-import { ChevronLeft, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronLeft, Trash2, ChevronDown, ChevronUp, Trophy } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { getVideoDetails } from '../utils/videoUtils.js';
+import CompletionSubmissionForm from '../components/CompletionSubmissionForm.jsx';
 
 export default function LevelDetail() {
   const { listType, levelId } = useParams();
@@ -21,6 +22,7 @@ export default function LevelDetail() {
   
   const [isCopied, setIsCopied] = useState(false);
   const [currentEmbedUrl, setCurrentEmbedUrl] = useState(null);
+  const [showCompletionForm, setShowCompletionForm] = useState(false);
 
   const fetchLevelAndHistory = async () => {
     setIsLoading(true);
@@ -181,7 +183,27 @@ export default function LevelDetail() {
       )}
 
       <div className="bg-white dark:bg-ui-bg/60 border border-gray-200 dark:border-accent/30 backdrop-blur-sm p-6 rounded-lg shadow-inner">
-        <h2 className="text-3xl font-bold text-center mb-4 text-gray-900 dark:text-white">{t('records')}</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t('records')}</h2>
+          {user && (
+            <button
+              onClick={() => setShowCompletionForm(!showCompletionForm)}
+              className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+            >
+              <Trophy className="w-4 h-4" />
+              Submit Completion
+            </button>
+          )}
+        </div>
+
+        {showCompletionForm && (
+          <div className="mb-6">
+            <CompletionSubmissionForm 
+              level={level} 
+              onClose={() => setShowCompletionForm(false)}
+            />
+          </div>
+        )}
         
         <ul className="text-center space-y-2 text-lg">
           <li>

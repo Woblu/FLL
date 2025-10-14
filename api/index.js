@@ -11,6 +11,7 @@ import * as collaborationHandlers from '../src/server/collaborationHandlers.js';
 import * as partHandlers from '../src/server/partHandlers.js';
 import * as chatHandlers from '../src/server/chatHandlers.js';
 import * as listManagementHandlers from '../src/server/listsManagementHandlers.js';
+import * as completionHandlers from '../src/server/completionHandlers.js';
 
 const prisma = new PrismaClient();
 
@@ -92,6 +93,12 @@ export default async function handler(req, res) {
       if (req.method === 'POST') return personalRecordHandlers.createPersonalRecord(req, res, decodedToken);
       if (req.method === 'DELETE') return personalRecordHandlers.deletePersonalRecord(req, res, decodedToken);
     }
+    else if (path === '/api/completion-submissions/create' && req.method === 'POST') {
+      return completionHandlers.createCompletionSubmission(req, res, decodedToken);
+    }
+    else if (path === '/api/completion-submissions/my-completions' && req.method === 'GET') {
+      return completionHandlers.listUserCompletions(req, res, decodedToken);
+    }
     else if (path.match(/^\/api\/personal-records\/[a-zA-Z0-9]+$/)) {
         const recordId = path.split('/')[3];
         if (req.method === 'GET') return personalRecordHandlers.getPersonalRecordById(req, res, decodedToken, recordId);
@@ -155,6 +162,8 @@ export default async function handler(req, res) {
       if (path === '/api/admin/layout-reports' && req.method === 'PUT') return moderationHandlers.updateReportStatus(req, res);
       if (path === '/api/admin/layouts' && req.method === 'DELETE') return layoutHandlers.deleteLayoutByAdmin(req, res);
       if (path === '/api/admin/users/ban' && req.method === 'PUT') return moderationHandlers.banUserFromWorkshop(req, res);
+      if (path === '/api/admin/completion-submissions' && req.method === 'GET') return completionHandlers.listAllCompletions(req, res);
+      if (path === '/api/admin/completion-submissions/remove' && req.method === 'POST') return completionHandlers.removeCompletionRecord(req, res);
     } 
     else {
       return res.status(404).json({ message: `Route ${req.method} ${path} not found.` });
