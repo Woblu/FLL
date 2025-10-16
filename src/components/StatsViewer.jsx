@@ -2,18 +2,35 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { X, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import fllListData from '../data/fll-list.json'; // The list of levels
-import fllStatsData from '../data/fll-stats.json'; // The player completion data
 import { useAuth } from '../contexts/AuthContext.jsx';
 
-// Scoring formula: 100 points for #1, decaying for lower placements.
-const getPoints = (placement) => 100 / Math.sqrt(placement);
+// Scoring formula: 100 points for #1, decaying for higher placements (worse rankings).
+const getPoints = (placement) => 100 / placement;
 
 export default function StatsViewer({ onClose, title }) {
   const [search, setSearch] = useState('');
   const { token } = useAuth();
   const [completionData, setCompletionData] = useState([]);
+  const [levelData, setLevelData] = useState([]);
   const [isLoadingCompletions, setIsLoadingCompletions] = useState(false);
+  const [isLoadingLevels, setIsLoadingLevels] = useState(false);
+
+  // Fetch level data from database
+  useEffect(() => {
+    const fetchLevelData = async () => {
+      setIsLoadingLevels(true);
+      try {
+        const response = await axios.get('/api/lists/main-list');
+        setLevelData(response.data);
+      } catch (error) {
+        console.error('Failed to fetch level data:', error);
+      } finally {
+        setIsLoadingLevels(false);
+      }
+    };
+
+    fetchLevelData();
+  }, []);
 
   // Fetch completion data from database
   useEffect(() => {
@@ -37,60 +54,69 @@ export default function StatsViewer({ onClose, title }) {
   }, [token]);
 
   const rankedPlayers = useMemo(() => {
-    // 1. Create a map of placements to base points from the level list
-    const pointValues = new Map(fllListData.map(level => [level.placement, getPoints(level.placement)]));
+    // 1. Create a map of placements to base points from the database level data
+    const pointValues = new Map(levelData.map(level => [level.placement, getPoints(level.placement)]));
 
-    // 2. Merge static data with database completion data
-    const allPlayerData = [...fllStatsData];
-    
-    // Add completion data from database
+    // 2. Calculate verifications from database level data (verifier field)
+    const verificationsByPlayer = {};
+    levelData.forEach(level => {
+      if (level.verifier) {
+        if (!verificationsByPlayer[level.verifier]) {
+          verificationsByPlayer[level.verifier] = [];
+        }
+        verificationsByPlayer[level.verifier].push(level.placement);
+      }
+    });
+
+    // 3. Calculate completions from database completion data
+    const completionsByPlayer = {};
     completionData.forEach(level => {
       level.records.forEach(record => {
-        const existingPlayer = allPlayerData.find(p => p.name === record.username);
-        if (existingPlayer) {
-          // Add this completion to existing player
-          if (!existingPlayer.completions) existingPlayer.completions = [];
-          if (!existingPlayer.completions.includes(level.placement)) {
-            existingPlayer.completions.push(level.placement);
-          }
-        } else {
-          // Create new player entry
-          allPlayerData.push({
-            name: record.username,
-            completions: [level.placement],
-            verifications: []
-          });
+        if (!completionsByPlayer[record.username]) {
+          completionsByPlayer[record.username] = [];
+        }
+        if (!completionsByPlayer[record.username].includes(level.placement)) {
+          completionsByPlayer[record.username].push(level.placement);
         }
       });
     });
 
-    // 3. Calculate the total score for each player with verifier bonuses
+    // 4. Get all unique players (from verifications and completions)
+    const allPlayerNames = new Set([
+      ...Object.keys(verificationsByPlayer),
+      ...Object.keys(completionsByPlayer)
+    ]);
+
+    // 5. Create player data with correct stats
+    const allPlayerData = Array.from(allPlayerNames).map(playerName => ({
+      name: playerName,
+      verifications: verificationsByPlayer[playerName] || [],
+      completions: completionsByPlayer[playerName] || []
+    }));
+
+    // 6. Calculate the total score for each player with verifier bonuses
     const playersWithScores = allPlayerData.map(player => {
       let score = 0;
       
       // Points for completions (1x multiplier)
-      if (player.completions) {
-        score += player.completions.reduce((total, placement) => {
-          return total + (pointValues.get(placement) || 0);
-        }, 0);
-      }
+      score += player.completions.reduce((total, placement) => {
+        return total + (pointValues.get(placement) || 0);
+      }, 0);
       
       // Points for verifications (1.1x multiplier)
-      if (player.verifications) {
-        score += player.verifications.reduce((total, placement) => {
-          return total + (pointValues.get(placement) || 0) * 1.1;
-        }, 0);
-      }
+      score += player.verifications.reduce((total, placement) => {
+        return total + (pointValues.get(placement) || 0) * 1.1;
+      }, 0);
       
       return { ...player, score };
     });
 
-    // 4. Sort players by score in descending order
+    // 7. Sort players by score in descending order
     playersWithScores.sort((a, b) => b.score - a.score);
 
-    // 5. Assign ranks
+    // 8. Assign ranks
     return playersWithScores.map((player, index) => ({ ...player, rank: index + 1 }));
-  }, [completionData]);
+  }, [levelData, completionData]);
 
   const filteredPlayers = rankedPlayers.filter(
     (player) => player.name.toLowerCase().includes(search.toLowerCase())
@@ -124,9 +150,9 @@ export default function StatsViewer({ onClose, title }) {
           </div>
         </div>
         <ul className="flex-grow overflow-y-auto custom-scrollbar space-y-2 p-4">
-          {isLoadingCompletions && (
+          {(isLoadingCompletions || isLoadingLevels) && (
             <li className="text-center text-gray-500 dark:text-gray-400 py-4">
-              Loading completion data...
+              Loading stats data...
             </li>
           )}
           {filteredPlayers.map((player) => (
