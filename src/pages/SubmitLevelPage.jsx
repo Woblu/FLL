@@ -12,7 +12,7 @@ export default function SubmitLevelPage() {
   const [levelName, setLevelName] = useState('');
   const [levelId, setLevelId] = useState('');
   const [videoId, setVideoId] = useState('');
-  const [attempts, setAttempts] = useState(''); // New state for attempts
+  const [attempts, setAttempts] = useState('');
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,11 +35,12 @@ export default function SubmitLevelPage() {
         setLevelName('');
         setLevelId('');
         setVideoId('');
-        setAttempts(''); // Clear attempts field
+        setAttempts('');
         setSuccess('');
       }, 3000);
 
-    } catch (err)      setError(err.response?.data?.message || 'An unknown error occurred.');
+    } catch (err) { // --- THIS BLOCK IS FIXED ---
+      setError(err.response?.data?.message || 'An unknown error occurred.');
     } finally {
       setIsLoading(false);
     }
