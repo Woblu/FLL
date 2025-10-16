@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 // Scoring formula: 100 points for #1, decaying for higher placements (worse rankings).
 const getPoints = (placement) => 100 / placement;
 
-export default function StatsViewer({ onClose, title }) {
+export default function StatsViewer({ onClose, title, listType = "main" }) {
   const [search, setSearch] = useState('');
   const { token } = useAuth();
   const [completionData, setCompletionData] = useState([]);
@@ -20,7 +20,7 @@ export default function StatsViewer({ onClose, title }) {
     const fetchLevelData = async () => {
       setIsLoadingLevels(true);
       try {
-        const response = await axios.get('/api/lists/main-list');
+        const response = await axios.get(`/api/lists/${listType}-list`);
         setLevelData(response.data);
       } catch (error) {
         console.error('Failed to fetch level data:', error);
@@ -30,7 +30,7 @@ export default function StatsViewer({ onClose, title }) {
     };
 
     fetchLevelData();
-  }, []);
+  }, [listType]);
 
   // Fetch completion data from database
   useEffect(() => {

@@ -9,6 +9,7 @@ import SettingsMenu from "./SettingsMenu";
 export default function Tabs() {
   const { user } = useAuth();
   const [isStatsViewerOpen, setIsStatsViewerOpen] = useState(false);
+  const [isHDLStatsViewerOpen, setIsHDLStatsViewerOpen] = useState(false);
 
   const navLinkClasses = ({ isActive }) => 
     `px-4 py-2 rounded-md font-semibold transition-all duration-300 text-sm whitespace-nowrap flex items-center gap-2
@@ -37,6 +38,9 @@ export default function Tabs() {
              <NavLink to="/" end className={navLinkClasses}>
                 The FLL
               </NavLink>
+             <NavLink to="/hdl" className={navLinkClasses}>
+                HDL
+              </NavLink>
             
             {user && (
               <NavLink to="/submit-level" className={navLinkClasses}>
@@ -54,7 +58,15 @@ export default function Tabs() {
               className={buttonClasses}
             >
               <BarChart2 className="w-4 h-4" />
-              <span className="hidden md:inline">FLL Stats Viewer</span>
+              <span className="hidden md:inline">FLL Stats</span>
+            </button>
+            <button 
+              title="HDL Stats Viewer" 
+              onClick={() => setIsHDLStatsViewerOpen(true)} 
+              className={buttonClasses}
+            >
+              <BarChart2 className="w-4 h-4" />
+              <span className="hidden md:inline">HDL Stats</span>
             </button>
             
             {user ? (
@@ -72,7 +84,8 @@ export default function Tabs() {
           </div>
         </div>
       </header>
-      {isStatsViewerOpen && <StatsViewer listType="fll" onClose={() => setIsStatsViewerOpen(false)} title="FLL Stats Viewer"/>}
+      {isStatsViewerOpen && <StatsViewer listType="main" onClose={() => setIsStatsViewerOpen(false)} title="FLL Stats Viewer"/>}
+      {isHDLStatsViewerOpen && <StatsViewer listType="hdl" onClose={() => setIsHDLStatsViewerOpen(false)} title="HDL Stats Viewer"/>}
     </>
   );
 }
