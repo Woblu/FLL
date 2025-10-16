@@ -48,7 +48,8 @@ model Level {
   name        String
   creator     String
   verifier    String
-  levelId     Int            @unique
+  attempts    Int?
+  levelId     Int
   videoId     String
   description String?
   list        String

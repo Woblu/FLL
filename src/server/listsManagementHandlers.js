@@ -189,14 +189,14 @@ export async function getHistoricList(req, res) {
 }
 
 export async function createLevelByUser(req, res, decodedToken) {
-  const { levelName, levelId, videoId } = req.body;
-  if (!levelName || !levelId || !videoId) {
-    return res.status(400).json({ message: 'Level Name, Level ID, and a Video ID are required.' });
+  const { levelName, levelId, videoId, list, attempts } = req.body;
+  if (!levelName || !levelId || !videoId || !list) {
+    return res.status(400).json({ message: 'Level Name, Level ID, Video ID, and List are required.' });
   }
   const { username } = decodedToken;
   try {
     const lastLevel = await prisma.level.findFirst({
-      where: { list: 'main-list' },
+      where: { list: list },
       orderBy: { placement: 'desc' },
     });
     const newPlacement = lastLevel ? lastLevel.placement + 1 : 1;
@@ -208,7 +208,8 @@ export async function createLevelByUser(req, res, decodedToken) {
         creator: username,
         verifier: username,
         placement: newPlacement,
-        list: 'main-list',
+        list: list,
+        attempts: attempts ? parseInt(attempts, 10) : null,
       },
     });
     return res.status(201).json(newLevel);

@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom'; // Import useParams
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { UploadCloud } from 'lucide-react';
 
 export default function SubmitLevelPage() {
-  const { listType } = useParams(); // Get the list type from the URL (e.g., 'main' or 'hdl')
+  const { listType } = useParams();
   const { user, token } = useAuth();
   const navigate = useNavigate();
 
   const [levelName, setLevelName] = useState('');
   const [levelId, setLevelId] = useState('');
   const [videoId, setVideoId] = useState('');
+  const [attempts, setAttempts] = useState(''); // New state for attempts
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,9 +25,8 @@ export default function SubmitLevelPage() {
     setSuccess('');
 
     try {
-      // The payload now includes the correct list name
       await axios.post('/api/levels', 
-        { levelName, levelId, videoId, list: `${listType}-list` },
+        { levelName, levelId, videoId, attempts, list: `${listType}-list` },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -35,11 +35,11 @@ export default function SubmitLevelPage() {
         setLevelName('');
         setLevelId('');
         setVideoId('');
+        setAttempts(''); // Clear attempts field
         setSuccess('');
       }, 3000);
 
-    } catch (err) {
-      setError(err.response?.data?.message || 'An unknown error occurred.');
+    } catch (err)      setError(err.response?.data?.message || 'An unknown error occurred.');
     } finally {
       setIsLoading(false);
     }
@@ -75,8 +75,21 @@ export default function SubmitLevelPage() {
             className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-ui-bg/30 border-gray-300 dark:border-accent/30 text-gray-900 dark:text-white"
           />
         </div>
+
         <div>
-          <label htmlFor="videoId" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Video ID or URL (YouTube, Medal, etc.)</label>
+          <label htmlFor="attempts" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Attempts (optional)</label>
+          <input
+            id="attempts"
+            type="number"
+            placeholder="e.g., 12345"
+            value={attempts}
+            onChange={(e) => setAttempts(e.target.value)}
+            className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-ui-bg/30 border-gray-300 dark:border-accent/30 text-gray-900 dark:text-white"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="videoId" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Video Proof (YouTube, Medal, etc.)</label>
           <input
             id="videoId"
             type="text"

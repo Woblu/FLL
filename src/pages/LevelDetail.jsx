@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
-import { ChevronLeft, Trash2, ChevronDown, ChevronUp, Trophy } from 'lucide-react';
+import { ChevronLeft, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { getVideoDetails } from '../utils/videoUtils.js';
-import CompletionSubmissionForm from '../components/CompletionSubmissionForm.jsx';
+import { getVideoEmbedUrl } from '../utils/videoUtils.js';
 
 export default function LevelDetail() {
   const { listType, levelId } = useParams();
@@ -21,22 +20,19 @@ export default function LevelDetail() {
   const [error, setError] = useState(null);
   
   const [isCopied, setIsCopied] = useState(false);
-  const [currentEmbedUrl, setCurrentEmbedUrl] = useState(null);
-  const [showCompletionForm, setShowCompletionForm] = useState(false);
+  const [embedInfo, setEmbedInfo] = useState(null);
 
   const fetchLevelAndHistory = async () => {
     setIsLoading(true);
     setError(null);
     setHistory([]);
     try {
-      // --- THIS LINE IS FIXED ---
-      // Re-added '-list' to the listType to match the API and database
       const levelResponse = await axios.get(`/api/level/${levelId}?list=${listType}-list`);
       setLevel(levelResponse.data);
       
       if (levelResponse.data?.videoId) {
-        const videoDetails = getVideoDetails(levelResponse.data.videoId);
-        setCurrentEmbedUrl(videoDetails.embedUrl);
+        const embed = getVideoEmbedUrl(levelResponse.data.videoId, window.location.hostname);
+        setEmbedInfo(embed);
       }
       if (token && levelResponse.data?.id) {
         const historyResponse = await axios.get(`/api/levels/${levelResponse.data.id}/history`, {
@@ -68,8 +64,8 @@ export default function LevelDetail() {
   };
   
   const handleRecordClick = (videoId) => {
-    const videoDetails = getVideoDetails(videoId);
-    setCurrentEmbedUrl(videoDetails.embedUrl);
+    const embed = getVideoEmbedUrl(videoId, window.location.hostname);
+    setEmbedInfo(embed);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -122,6 +118,10 @@ export default function LevelDetail() {
         <div className="flex flex-wrap justify-center text-center mb-4 gap-x-8 gap-y-2 text-lg text-gray-600 dark:text-text-secondary">
           <p><span className="font-bold text-gray-800 dark:text-white">Published by:</span> {level.creator}</p>
           <p><span className="font-bold text-gray-800 dark:text-white">{verifierLabel}</span> {level.verifier}</p>
+          {/* This block will only render if level.attempts has a value */}
+          {level.attempts && (
+            <p><span className="font-bold text-gray-800 dark:text-white">Attempts:</span> {level.attempts.toLocaleString()}</p>
+          )}
         </div>
         
         {level.levelId && (
@@ -138,22 +138,32 @@ export default function LevelDetail() {
           </div>
         )}
 
-        {currentEmbedUrl ? (
-          <div className="aspect-video w-full border-2 border-gray-300 dark:border-accent/30 rounded-xl overflow-hidden">
-            <iframe
-              key={currentEmbedUrl}
-              width="100%"
-              height="100%"
-              src={currentEmbedUrl}
-              title="Video Player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
+        {embedInfo && embedInfo.url ? (
+          <div className="aspect-video w-full border-2 border-gray-300 dark:border-accent/30 rounded-xl overflow-hidden bg-black">
+            {embedInfo.type === 'iframe' ? (
+              <iframe
+                key={embedInfo.url}
+                width="100%"
+                height="100%"
+                src={embedInfo.url}
+                title="Video Player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            ) : (
+              <video
+                key={embedInfo.url}
+                width="100%"
+                height="100%"
+                src={embedInfo.url}
+                controls
+              ></video>
+            )}
           </div>
         ) : (
           <div className="aspect-video w-full border-2 border-dashed border-gray-300 dark:border-accent/30 rounded-xl flex items-center justify-center bg-gray-50 dark:bg-ui-bg/30">
-            <p className="text-gray-500 dark:text-text-secondary">No video available for this level.</p>
+            <p className="text-gray-500 dark:text-text-secondary">No embeddable video found for this level.</p>
           </div>
         )}
       </div>
@@ -183,27 +193,7 @@ export default function LevelDetail() {
       )}
 
       <div className="bg-white dark:bg-ui-bg/60 border border-gray-200 dark:border-accent/30 backdrop-blur-sm p-6 rounded-lg shadow-inner">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t('records')}</h2>
-          {user && (
-            <button
-              onClick={() => setShowCompletionForm(!showCompletionForm)}
-              className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
-            >
-              <Trophy className="w-4 h-4" />
-              Submit Completion
-            </button>
-          )}
-        </div>
-
-        {showCompletionForm && (
-          <div className="mb-6">
-            <CompletionSubmissionForm 
-              level={level} 
-              onClose={() => setShowCompletionForm(false)}
-            />
-          </div>
-        )}
+        <h2 className="text-3xl font-bold text-center mb-4 text-gray-900 dark:text-white">{t('records')}</h2>
         
         <ul className="text-center space-y-2 text-lg">
           <li>
