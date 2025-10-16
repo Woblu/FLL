@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom'; // Import useParams
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { UploadCloud } from 'lucide-react';
 
 export default function SubmitLevelPage() {
+  const { listType } = useParams(); // Get the list type from the URL (e.g., 'main' or 'hdl')
   const { user, token } = useAuth();
   const navigate = useNavigate();
 
@@ -23,13 +24,13 @@ export default function SubmitLevelPage() {
     setSuccess('');
 
     try {
+      // The payload now includes the correct list name
       await axios.post('/api/levels', 
-        { levelName, levelId, videoId },
+        { levelName, levelId, videoId, list: `${listType}-list` },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      setSuccess('Level submitted successfully! It has been added to the bottom of the list.');
-      // Clear form after a short delay
+      setSuccess(`Level submitted to ${listType.toUpperCase()} successfully!`);
       setTimeout(() => {
         setLevelName('');
         setLevelId('');
@@ -45,59 +46,59 @@ export default function SubmitLevelPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto text-white p-4 md:p-8">
+    <div className="max-w-2xl mx-auto p-4 md:p-8">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold">Submit a Level</h1>
-        <p className="text-gray-400 mt-2">Submit a level you have created and verified to add it to the list.</p>
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Submit a {listType.toUpperCase()} Level</h1>
+        <p className="text-gray-500 dark:text-gray-400 mt-2">Submit a level you have created and verified to add it to the {listType.toUpperCase()} list.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-gray-800/50 p-6 rounded-xl border border-gray-700 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-ui-bg/50 p-6 rounded-xl border border-gray-200 dark:border-accent/30 space-y-6">
         <div>
-          <label htmlFor="levelName" className="block text-sm font-bold text-gray-300 mb-2">Level Name</label>
+          <label htmlFor="levelName" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Level Name</label>
           <input
             id="levelName"
             type="text"
             value={levelName}
             onChange={(e) => setLevelName(e.target.value)}
             required
-            className="w-full p-2 rounded-lg border border-gray-600 bg-gray-700 text-gray-200"
+            className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-ui-bg/30 border-gray-300 dark:border-accent/30 text-gray-900 dark:text-white"
           />
         </div>
         <div>
-          <label htmlFor="levelId" className="block text-sm font-bold text-gray-300 mb-2">Level ID</label>
+          <label htmlFor="levelId" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Level ID</label>
           <input
             id="levelId"
             type="number"
             value={levelId}
             onChange={(e) => setLevelId(e.target.value)}
             required
-            className="w-full p-2 rounded-lg border border-gray-600 bg-gray-700 text-gray-200"
+            className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-ui-bg/30 border-gray-300 dark:border-accent/30 text-gray-900 dark:text-white"
           />
         </div>
         <div>
-          <label htmlFor="videoId" className="block text-sm font-bold text-gray-300 mb-2">Video ID or URL (YouTube, Medal, etc.)</label>
+          <label htmlFor="videoId" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Video ID or URL (YouTube, Medal, etc.)</label>
           <input
             id="videoId"
             type="text"
             value={videoId}
             onChange={(e) => setVideoId(e.target.value)}
             required
-            className="w-full p-2 rounded-lg border border-gray-600 bg-gray-700 text-gray-200"
+            className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-ui-bg/30 border-gray-300 dark:border-accent/30 text-gray-900 dark:text-white"
           />
         </div>
 
-        <div className="text-sm text-gray-400 border-t border-b border-gray-700 py-4">
+        <div className="text-sm text-gray-600 dark:text-gray-400 border-t border-b border-gray-200 dark:border-accent/50 py-4">
           <p><strong>Creator:</strong> {user?.username} (auto-filled)</p>
           <p><strong>Verifier:</strong> {user?.username} (auto-filled)</p>
         </div>
 
-        {error && <p className="text-red-400 text-center">{error}</p>}
-        {success && <p className="text-green-400 text-center">{success}</p>}
+        {error && <p className="text-red-500 text-center">{error}</p>}
+        {success && <p className="text-green-500 text-center">{success}</p>}
 
         <button 
           type="submit" 
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold bg-cyan-600 hover:bg-cyan-700 text-white transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed dark:disabled:bg-gray-600"
         >
           <UploadCloud size={18} />
           {isLoading ? 'Submitting...' : 'Submit Level'}

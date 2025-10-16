@@ -57,7 +57,7 @@ export default function App() {
               <Route path="/register" element={<RegisterPage />} />
               
               {/* Protected User Routes */}
-              <Route path="/submit-level" element={<ProtectedRoute><SubmitLevelPage /></ProtectedRoute>} />
+              <Route path="/submit/:listType" element={<ProtectedRoute><SubmitLevelPage /></ProtectedRoute>} />
               <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>}>
                 <Route index element={<Navigate to="profile" replace />} />
                 <Route path="profile" element={<ProfileSettingsPage />} />
