@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext.jsx";
 import { Pencil, Trash2, Pin, PinOff } from 'lucide-react';
-import { getVideoDetails } from '../utils/videoUtils.js'; // Import the new function
+import { getVideoDetails } from '../utils/videoUtils.js'; // FIX: Import the correct function
 
 export default function LevelCard({ level, index, listType, onEdit, onDelete, onPin, pinnedRecordId }) {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function LevelCard({ level, index, listType, onEdit, onDelete, on
   const videoUrl = level.videoUrl || level.videoId;
   const levelName = level.name || level.levelName || '[Name Missing]';
   
-  // Use the new function to get video details
+  // FIX: Use the correct function to get video details for the thumbnail
   const videoDetails = getVideoDetails(videoUrl);
 
   const handleClick = () => {
@@ -38,7 +38,7 @@ export default function LevelCard({ level, index, listType, onEdit, onDelete, on
     >
       <div className="w-full sm:w-40 aspect-video rounded-md overflow-hidden flex-shrink-0 relative">
         <img
-          src={videoDetails.thumbnailUrl} // Use the thumbnail from the new function
+          src={videoDetails.thumbnailUrl} // FIX: Use the thumbnailUrl from the details object
           alt={`${levelName} thumbnail`}
           className="w-full h-full object-cover"
         />
