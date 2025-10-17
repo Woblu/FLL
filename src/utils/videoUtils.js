@@ -1,9 +1,9 @@
 /**
- * This is the definitive utility to handle all video links.
+ * This is the definitive utility to handle all video links for the FLL List.
  * It analyzes a URL and returns a standardized object with an embedUrl, 
  * a thumbnailUrl, and the player type.
  */
-export const getVideoDetails = (url, hostname) => {
+export const getVideoDetails = (url) => {
   if (!url) {
     return { 
       embedUrl: null, 
@@ -58,7 +58,7 @@ export const getVideoDetails = (url, hostname) => {
     }
 
   } catch (error) {
-    console.error("Could not parse URL:", url, error);
+    // Fails silently if URL is invalid
   }
 
   // Fallback for any other link
