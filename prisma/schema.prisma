@@ -24,11 +24,13 @@ enum ChangeType {
 
 model User {
   id               String            @id @default(auto()) @map("_id") @db.ObjectId
-  email            String            @unique
+  email      
+      String            @unique
   username         String            @unique
   password         String
   role             Role              @default(USER)
-  createdAt        DateTime          @default(now())
+  createdAt        DateTime         
+ @default(now())
   levelSubmissions LevelSubmission[]
 }
 
@@ -43,18 +45,20 @@ model LevelRecord {
 }
 
 model Level {
-  id          String         @id @default(auto()) @map("_id") @db.ObjectId
-  placement   Int
-  name        String
-  creator     String
-  verifier    String
-  attempts    Int?
-  levelId     Int
-  videoId     String
-  description String?
-  list        String
-  changes     ListChange[]
-  records     LevelRecord[]
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  placement    Int
+  name         String
+  creator 
+     String
+  verifier     String
+  attempts     Int?
+ levelId      Int
+  videoId      String
+  thumbnailUrl String?        // <-- I HAVE ADDED THIS FIELD
+  description  String?
+ list         String
+  changes      ListChange[]
+  records      LevelRecord[]
   @@map("levels")
 }
 
@@ -66,7 +70,8 @@ model LevelSubmission {
   status        String   @default("PENDING")
   createdAt     DateTime @default(now())
   submittedBy   User     @relation(fields: [submittedById], references: [id])
-  submittedById String   @db.ObjectId
+  
+submittedById String   @db.ObjectId
 }
 
 model ListChange {
@@ -75,6 +80,7 @@ model ListChange {
   type        ChangeType
   description String
   list        String     // This field was missing
-  level       Level?     @relation(fields: [levelId], references: [id], onDelete: SetNull)
+  level       Level?
+@relation(fields: [levelId], references: [id], onDelete: SetNull)
   levelId     String?    @db.ObjectId
 }

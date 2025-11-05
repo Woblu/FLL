@@ -74,7 +74,7 @@ export async function moveLevelInList(req, res) {
 
       if (oldPlacement !== newPlacement) {
         if (oldPlacement > newPlacement) {
-          await tx.level.updateMany({ where: { list, placement: { gte: newPlacement, lt: oldPlacement } }, data: { placement: { increment: 1 } } });
+          await tx.level.updateMany({ where: { list, placement: { gTE: newPlacement, lt: oldPlacement } }, data: { placement: { increment: 1 } } });
         } else {
           await tx.level.updateMany({ where: { list, placement: { gt: oldPlacement, lte: newPlacement } }, data: { placement: { decrement: 1 } } });
         }
@@ -116,6 +116,8 @@ export async function updateLevel(req, res) {
         verifier: levelData.verifier,
         videoId: levelData.videoId,
         levelId: levelData.levelId ? parseInt(levelData.levelId, 10) : null,
+        // Also add thumbnailUrl here if you make an admin "edit" page
+        thumbnailUrl: levelData.thumbnailUrl || null, 
       },
     });
     return res.status(200).json(updatedLevel);
@@ -188,8 +190,9 @@ export async function getHistoricList(req, res) {
   }
 }
 
+// --- THIS FUNCTION IS NOW UPDATED ---
 export async function createLevelByUser(req, res, decodedToken) {
-  const { levelName, levelId, videoId, list, attempts } = req.body;
+  const { levelName, levelId, videoId, list, attempts, thumbnailUrl } = req.body; // <-- I'VE ADDED thumbnailUrl
   if (!levelName || !levelId || !videoId || !list) {
     return res.status(400).json({ message: 'Level Name, Level ID, Video ID, and List are required.' });
   }
@@ -210,6 +213,7 @@ export async function createLevelByUser(req, res, decodedToken) {
         placement: newPlacement,
         list: list,
         attempts: attempts ? parseInt(attempts, 10) : null,
+        thumbnailUrl: thumbnailUrl || null, // <-- I'VE ADDED THIS (saves as null if empty)
       },
     });
     return res.status(201).json(newLevel);

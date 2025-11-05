@@ -13,6 +13,7 @@ export default function SubmitLevelPage() {
   const [levelId, setLevelId] = useState('');
   const [videoId, setVideoId] = useState('');
   const [attempts, setAttempts] = useState('');
+  const [thumbnailUrl, setThumbnailUrl] = useState(''); // <-- I'VE ADDED THIS
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -26,7 +27,14 @@ export default function SubmitLevelPage() {
 
     try {
       await axios.post('/api/levels', 
-        { levelName, levelId, videoId, attempts, list: `${listType}-list` },
+        { 
+          levelName, 
+          levelId, 
+          videoId, 
+          attempts, 
+          thumbnailUrl, // <-- I'VE ADDED THIS
+          list: `${listType}-list` 
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -36,10 +44,11 @@ export default function SubmitLevelPage() {
         setLevelId('');
         setVideoId('');
         setAttempts('');
+        setThumbnailUrl(''); // <-- I'VE ADDED THIS
         setSuccess('');
       }, 3000);
 
-    } catch (err) { // --- THIS BLOCK IS FIXED ---
+    } catch (err) {
       setError(err.response?.data?.message || 'An unknown error occurred.');
     } finally {
       setIsLoading(false);
@@ -100,6 +109,21 @@ export default function SubmitLevelPage() {
             className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-ui-bg/30 border-gray-300 dark:border-accent/30 text-gray-900 dark:text-white"
           />
         </div>
+
+        {/* --- I'VE ADDED THIS ENTIRE BLOCK --- */}
+        <div>
+          <label htmlFor="thumbnailUrl" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Thumbnail URL (Optional)</label>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">If you're not using a YouTube link, please provide a direct link to an image (e.g., Imgur).</p>
+          <input
+            id="thumbnailUrl"
+            type="text"
+            placeholder="https://i.imgur.com/..."
+            value={thumbnailUrl}
+            onChange={(e) => setThumbnailUrl(e.target.value)}
+            className="w-full p-2 rounded-lg border bg-gray-50 dark:bg-ui-bg/30 border-gray-300 dark:border-accent/30 text-gray-900 dark:text-white"
+          />
+        </div>
+        {/* --- END OF NEW BLOCK --- */}
 
         <div className="text-sm text-gray-600 dark:text-gray-400 border-t border-b border-gray-200 dark:border-accent/50 py-4">
           <p><strong>Creator:</strong> {user?.username} (auto-filled)</p>
