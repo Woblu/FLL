@@ -1,3 +1,4 @@
+// src/pages/LevelDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
@@ -5,7 +6,7 @@ import { ChevronLeft, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { getVideoEmbedUrl } from '../utils/videoUtils.js';
+import { getVideoDetails } from '../utils/videoUtils.js'; // <-- UPDATED IMPORT
 
 export default function LevelDetail() {
   const { listType, levelId } = useParams();
@@ -31,8 +32,8 @@ export default function LevelDetail() {
       setLevel(levelResponse.data);
       
       if (levelResponse.data?.videoId) {
-        const embed = getVideoEmbedUrl(levelResponse.data.videoId, window.location.hostname);
-        setEmbedInfo(embed);
+        const details = getVideoDetails(levelResponse.data.videoId, window.location.hostname); // <-- Use new function
+        setEmbedInfo(details); // <-- Set all details
       }
       if (token && levelResponse.data?.id) {
         const historyResponse = await axios.get(`/api/levels/${levelResponse.data.id}/history`, {
@@ -64,8 +65,8 @@ export default function LevelDetail() {
   };
   
   const handleRecordClick = (videoId) => {
-    const embed = getVideoEmbedUrl(videoId, window.location.hostname);
-    setEmbedInfo(embed);
+    const details = getVideoDetails(videoId, window.location.hostname); // <-- Use new function
+    setEmbedInfo(details); // <-- Set all details
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -118,7 +119,6 @@ export default function LevelDetail() {
         <div className="flex flex-wrap justify-center text-center mb-4 gap-x-8 gap-y-2 text-lg text-gray-600 dark:text-text-secondary">
           <p><span className="font-bold text-gray-800 dark:text-white">Published by:</span> {level.creator}</p>
           <p><span className="font-bold text-gray-800 dark:text-white">{verifierLabel}</span> {level.verifier}</p>
-          {/* This block will only render if level.attempts has a value */}
           {level.attempts && (
             <p><span className="font-bold text-gray-800 dark:text-white">Attempts:</span> {level.attempts.toLocaleString()}</p>
           )}
@@ -138,14 +138,15 @@ export default function LevelDetail() {
           </div>
         )}
 
-        {embedInfo && embedInfo.url ? (
+        {/* --- UPDATED EMBED BLOCK --- */}
+        {embedInfo && embedInfo.embedUrl ? (
           <div className="aspect-video w-full border-2 border-gray-300 dark:border-accent/30 rounded-xl overflow-hidden bg-black">
             {embedInfo.type === 'iframe' ? (
               <iframe
-                key={embedInfo.url}
+                key={embedInfo.embedUrl}
                 width="100%"
                 height="100%"
-                src={embedInfo.url}
+                src={embedInfo.embedUrl}
                 title="Video Player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -153,10 +154,10 @@ export default function LevelDetail() {
               ></iframe>
             ) : (
               <video
-                key={embedInfo.url}
+                key={embedInfo.embedUrl}
                 width="100%"
                 height="100%"
-                src={embedInfo.url}
+                src={embedInfo.embedUrl}
                 controls
               ></video>
             )}
