@@ -1,4 +1,8 @@
 {
+  "myAccount": "Mi Cuenta",
+  "adminDashboard": "Panel de Administrador",
+  "logout": "Cerrar Sesión",
+  "darkMode": "Modo Oscuro"
   "back_to_home": "Volver",
   "player_not_found": "Jugador No Encontrado",
   "player_not_found_message": "El jugador solicitado no pudo ser encontrado.",

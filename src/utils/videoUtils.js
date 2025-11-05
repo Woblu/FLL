@@ -1,70 +1,34 @@
+// src/utils/videoUtils.js
+
 /**
- * This is the definitive utility to handle all video links for the FLL List.
- * It analyzes a URL and returns a standardized object with an embedUrl, 
- * a thumbnailUrl, and the player type.
+ * Transforms a YouTube URL or ID into a usable embed URL.
+ * @param {string} urlOrId The original video URL or ID.
+ * @param {any} [_cacheBust=null] This parameter is unused. It exists to force Vercel to break its build cache.
+ * @returns {{url: string, type: 'iframe'} | null} An object with the embeddable URL, or null if not embeddable.
  */
-export const getVideoDetails = (url) => {
-  if (!url) {
-    return { 
-      embedUrl: null, 
-      thumbnailUrl: 'https://placehold.co/320x180/e2e8f0/334155?text=No+Preview',
-      type: null 
-    };
+export const getVideoDetails = (urlOrId, _cacheBust = null) => {
+  if (!urlOrId) return null;
+
+  const trimmedInput = urlOrId.trim();
+
+  // 1. Check for full YouTube URLs.
+  // Example: https://www.youtube.com/watch?v=CELNmHwln_c
+  const urlRegex = /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^?&\n]+)/;
+  const urlMatch = trimmedInput.match(urlRegex);
+  
+  if (urlMatch && urlMatch[1]) {
+    const videoId = urlMatch[1].substring(0, 11); // Get the 11-character ID
+    return { url: `https://www.youtube-nocookie.com/embed/${videoId}`, type: 'iframe' };
   }
 
-  try {
-    // --- YouTube ---
-    const youtubeRegex = /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^?&\n]+)/;
-    const youtubeMatch = url.match(youtubeRegex);
-    if (youtubeMatch && youtubeMatch[1]) {
-      const videoId = youtubeMatch[1].substring(0, 11);
-      return { 
-        embedUrl: `https://www.youtube-nocookie.com/embed/${videoId}`, 
-        thumbnailUrl: `https://img.youtube.com/vi/${videoId}/0.jpg`,
-        type: 'iframe' 
-      };
-    }
-
-    // --- Medal.tv ---
-    const medalRegex = /medal\.tv\/(?:games\/[^\/]+\/)?clips?\/([a-zA-Z0-9_-]+)/;
-    const medalMatch = url.match(medalRegex);
-    if (medalMatch && medalMatch[1]) {
-      const clipId = medalMatch[1];
-      return { 
-        embedUrl: `https://medal.tv/clip/${clipId}/iframe`,
-        thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=Medal.tv+Clip',
-        type: 'iframe'
-      };
-    }
-
-    // --- Google Drive ---
-    const driveRegex = /drive\.google\.com\/file\/d\/([^/]+)/;
-    const driveMatch = url.match(driveRegex);
-    if (driveMatch && driveMatch[1]) {
-      return { 
-        embedUrl: `https://drive.google.com/file/d/${driveMatch[1]}/preview`,
-        thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=Google+Drive',
-        type: 'iframe' 
-      };
-    }
-
-    // --- Direct MP4 Link ---
-    if (new URL(url).pathname.endsWith('.mp4')) {
-      return { 
-        embedUrl: url, 
-        thumbnailUrl: 'https://placehold.co/320x180/10081c/ffffff?text=MP4+Video',
-        type: 'video' 
-      };
-    }
-
-  } catch (error) {
-    // Fails silently if URL is invalid
+  // 2. Check for a raw 11-character ID.
+  // Example: CELNmHwln_c
+  // This regex ^...$ ensures the *entire string* is a valid ID.
+  const rawIdRegex = /^[a-zA-Z0-9_-]{11}$/;
+  if (rawIdRegex.test(trimmedInput)) {
+     return { url: `https://www.youtube-nocookie.com/embed/${trimmedInput}`, type: 'iframe' };
   }
-
-  // Fallback for any other link
-  return { 
-    embedUrl: null, 
-    thumbnailUrl: 'https://placehold.co/320x180/e2e8f0/334155?text=Invalid+Link',
-    type: null
-  };
+  
+  // 3. If it's not a valid YouTube URL or raw ID, it fails.
+  return null;
 };
