@@ -12,7 +12,17 @@ export default function LevelCard({ level, index, listType, onEdit, onDelete, on
   const videoUrl = level.videoUrl || level.videoId;
   const levelName = level.name || level.levelName || '[Name Missing]';
   
-  const videoDetails = getVideoDetails(videoUrl);
+  // --- THUMBNAIL LOGIC FIX ---
+  // We check for the manually submitted thumbnailUrl first.
+  // If it doesn't exist, THEN we call getVideoDetails for the fallback.
+  let thumbnailUrl;
+  if (level.thumbnailUrl) {
+    thumbnailUrl = level.thumbnailUrl; // Use the manual URL (Imgur, Discord, etc.)
+  } else {
+    const videoDetails = getVideoDetails(videoUrl); // Get fallback (YouTube or placeholder)
+    thumbnailUrl = videoDetails.thumbnailUrl;
+  }
+  // --- END OF FIX ---
 
   const handleClick = () => {
     let path;
@@ -35,11 +45,13 @@ export default function LevelCard({ level, index, listType, onEdit, onDelete, on
         bg-white border border-gray-200 hover:ring-2 hover:ring-indigo-400
         dark:bg-ui-bg/50 dark:border-accent/30 dark:hover:ring-accent`}
     >
-      <div className="w-full sm:w-40 aspect-video rounded-md overflow-hidden flex-shrink-0 relative">
+      <div className="w-full sm:w-40 aspect-video rounded-md overflow-hidden flex-shrink-0 relative bg-gray-900">
         <img
-          src={videoDetails.thumbnailUrl}
+          src={thumbnailUrl} // <-- This now uses our new logic
           alt={`${levelName} thumbnail`}
           className="w-full h-full object-cover"
+          // Add error handling in case the manual link is broken
+          onError={(e) => { e.target.src = 'https://i.imgur.com/K8x1g1U.png'; }}
         />
         {isPinned && listType === 'progression' && (
           <div className="absolute top-1 right-1 bg-yellow-400 p-1 rounded-full">

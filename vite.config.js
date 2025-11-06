@@ -20,8 +20,8 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//],
       },
       manifest: {
-        name: 'DashRank',
-        short_name: 'DashRank',
+        name: 'FLL List',
+        short_name: 'FLL',
         description: 'A Geometry Dash Demonlist website.',
         theme_color: '#0891b2',
         background_color: '#ffffff',
