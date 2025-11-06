@@ -74,7 +74,8 @@ export async function moveLevelInList(req, res) {
 
       if (oldPlacement !== newPlacement) {
         if (oldPlacement > newPlacement) {
-          await tx.level.updateMany({ where: { list, placement: { gTE: newPlacement, lt: oldPlacement } }, data: { placement: { increment: 1 } } });
+          // --- THIS IS THE LINE I FIXED ---
+          await tx.level.updateMany({ where: { list, placement: { gte: newPlacement, lt: oldPlacement } }, data: { placement: { increment: 1 } } });
         } else {
           await tx.level.updateMany({ where: { list, placement: { gt: oldPlacement, lte: newPlacement } }, data: { placement: { decrement: 1 } } });
         }
