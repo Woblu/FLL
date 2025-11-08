@@ -12,6 +12,8 @@ import * as partHandlers from '../src/server/partHandlers.js';
 import * as chatHandlers from '../src/server/chatHandlers.js';
 import * as listManagementHandlers from '../src/server/listsManagementHandlers.js';
 import * as completionHandlers from '../src/server/completionHandlers.js';
+// --- I'VE ADDED THIS LINE ---
+import * as levelRecordHandlers from '../src/server/levelRecordHandlers.js';
 
 const prisma = new PrismaClient();
 
@@ -52,7 +54,7 @@ export default async function handler(req, res) {
       const level = await prisma.level.findFirst({ 
         where: { levelId: levelId, list: list },
         include: {
-          records: true
+          records: true // <-- Make sure this is here to get records
         }
       });
       return level ? res.status(200).json(level) : res.status(404).json({ error: 'Level not found on this list' });
@@ -82,8 +84,14 @@ export default async function handler(req, res) {
     if (!decodedToken) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-   
-    if (path === '/api/users') {
+
+    // --- I'VE ADDED THIS NEW ROUTE ---
+    if (path === '/api/records/create' && req.method === 'POST') {
+      return levelRecordHandlers.createOrUpdateLevelRecord(req, res, decodedToken);
+    }
+    // --- END OF NEW ROUTE ---
+
+    else if (path === '/api/users') {
       if (req.method === 'GET') return userHandlers.getUser(req, res, decodedToken);
       if (req.method === 'POST') return userHandlers.pinRecord(req, res, decodedToken);
     } 

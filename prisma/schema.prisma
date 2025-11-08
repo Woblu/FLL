@@ -40,6 +40,8 @@ model LevelRecord {
   levelId   String @db.ObjectId
   level     Level  @relation(fields: [levelId], references: [id])
   createdAt DateTime @default(now())
+
+@@unique([levelId, username], name: "levelId_username")
 }
 
 model Level {
