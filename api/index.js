@@ -1,9 +1,5 @@
-// api/index.js
-import express from 'express';
-import cors from 'cors';
+import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
-
-// Import handlers
 import * as authHandlers from '../src/server/authHandlers.js';
 import * as friendHandlers from '../src/server/friendHandlers.js';
 import * as layoutHandlers from '../src/server/layoutHandlers.js';
@@ -15,236 +11,172 @@ import * as collaborationHandlers from '../src/server/collaborationHandlers.js';
 import * as partHandlers from '../src/server/partHandlers.js';
 import * as chatHandlers from '../src/server/chatHandlers.js';
 import * as listManagementHandlers from '../src/server/listsManagementHandlers.js';
-import { getPlayerStats } from '../src/server/playerStatsHandlers.js';
-import { PrismaClient } from '@prisma/client';
+import * as completionHandlers from '../src/server/completionHandlers.js';
+import * as levelRecordHandlers from '../src/server/levelRecordHandlers.js';
+// (The bad import for 'submissionHandlers.js' is now gone)
 
 const prisma = new PrismaClient();
 
-// --- Middleware Definitions ---
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1];
-    if (token == null) {
-        console.log("[AuthMiddleware] No token provided.");
-        return res.status(401).json({ message: 'Unauthorized: Token required.' }); // Send JSON response
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            console.error("[AuthMiddleware] JWT Verification Error:", err.message);
-            return res.status(403).json({ message: 'Forbidden: Invalid or expired token.' }); // Send JSON response
-        }
-        req.user = user;
-        console.log("[AuthMiddleware] Token verified for user:", user.userId);
-        next();
-    });
+const getDecodedToken = (req) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+  const token = authHeader.split(' ')[1];
+  try { return jwt.verify(token, process.env.JWT_SECRET); } catch (error) { return null; }
 };
 
-const isModeratorOrAdmin = (req, res, next) => {
-     if (req.user && (req.user.role === 'ADMIN' || req.user.role === 'MODERATOR')) {
-        next();
-    } else { res.status(403).json({ message: 'Forbidden: Requires Moderator or Admin role' }); }
-}; // [FIX] Removed the extra '}' typo
-
-// --- Vercel Serverless Function Handler ---
 export default async function handler(req, res) {
-    // Apply CORS globally
-    cors()(req, res, async () => {
-        // Parse JSON body
-        if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
-            try {
-                let body = '';
-                for await (const chunk of req) { body += chunk; }
-                if (body) req.body = JSON.parse(body);
-            } catch (e) {
-                console.error("Error parsing JSON body:", e);
-                return res.status(400).json({ message: 'Invalid JSON body.' });
-            }
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const path = url.pathname;
+  req.query = Object.fromEntries(url.searchParams);
+
+  if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
+    try {
+      const chunks = [];
+      for await (const chunk of req) { chunks.push(chunk); }
+      if (chunks.length > 0) { req.body = JSON.parse(Buffer.concat(chunks).toString()); }
+    } catch (e) { /* Ignore */ }
+  }
+
+  // --- PUBLIC ROUTES ---
+  if ((path === '/api/auth' || path === '/api/register') && req.method === 'POST') {
+    const { action } = req.body || {};
+    if (path === '/api/auth' && action === 'login') return authHandlers.loginUser(req, res);
+    if (path === '/api/register' || (path === '/api/auth' && action === 'register')) return authHandlers.registerUser(req, res);
+  } 
+  else if (path.match(/^\/api\/level\/\d+$/) && req.method === 'GET') {
+    const levelId = parseInt(path.split('/')[3], 10);
+    const { list } = req.query;
+
+      console.log(`[API DEBUG] Searching for level with ID: ${levelId} on list: ${list}`); 
+
+    if (!list) { return res.status(400).json({ error: 'A list query parameter is required.' }); }
+    try {
+      const level = await prisma.level.findFirst({ 
+        where: { levelId: levelId, list: list },
+        include: {
+          records: true
         }
+      });
+      return level ? res.status(200).json(level) : res.status(404).json({ error: 'Level not found on this list' });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Failed to fetch level data.' });
+    }
+  } 
+  else if (path.match(/^\/api\/lists\/[a-zA-Z0-9_-]+$/) && req.method === 'GET') {
+    const listType = path.split('/')[3];
+    const levels = await prisma.level.findMany({ where: { list: listType }, orderBy: { placement: 'asc' } });
+    return res.status(200).json(levels);
+  }
+  else if (path === '/api/lists/main-list/history' && req.method === 'GET') {
+    return listManagementHandlers.getHistoricList(req, res);
+  }
+  else if (path === '/api/layouts' && req.method === 'GET') {
+    return layoutHandlers.listLayouts(req, res);
+  } 
+  else if (path.match(/^\/api\/layouts\/[a-zA-Z0-9]+$/) && !path.includes('/applicants') && !path.includes('/parts-and-team') && req.method === 'GET') {
+    const layoutId = path.split('/')[3];
+    return layoutHandlers.getLayoutById(req, res, layoutId);
+  } 
+  // --- START OF PROTECTED ROUTES ---
+  else {
+    const decodedToken = getDecodedToken(req);
+    if (!decodedToken) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
 
-        // --- Simple Router Logic ---
-        const url = new URL(req.url, `http://${req.headers.host}`);
-        const path = url.pathname;
-        req.query = Object.fromEntries(url.searchParams); // Attach query params
-        req.params = {}; // Initialize params
-
-        console.log(`[API Router] Request: ${req.method} ${path}`);
-
-        try {
-            // --- PUBLIC ROUTES (Checked FIRST) ---
-
-            if (req.method === 'POST' && path === '/api/auth') {
-                console.log("[API Router] Routing to loginUser handler for /api/auth");
-                return await authHandlers.loginUser(req, res);
-            }
-            if (req.method === 'POST' && path === '/api/register') {
-                 console.log("[API Router] Routing to registerUser handler for /api/register");
-                return await authHandlers.registerUser(req, res);
-            }
-
-            const listMatch = path.match(/^\/api\/lists\/([a-zA-Z0-9_-]+)$/);
-            if (req.method === 'GET' && listMatch && listMatch[1] !== 'main-list/history') { 
-                req.params.listName = listMatch[1];
-                console.log(`[API Router] Routing to list fetch handler for list: ${req.params.listName}`);
-                return await prisma.level.findMany({
-                    where: { list: req.params.listName }, orderBy: { placement: 'asc' }
-                }).then(levels => res.status(200).json(levels))
-                  .catch(error => { console.error(`Error fetching list ${req.params.listName}:`, error); res.status(500).json({ message: "Failed to fetch list."}); });
-            }
-
-             const levelMatch = path.match(/^\/api\/level\/([a-zA-Z0-9]+)$/); 
-             if (req.method === 'GET' && levelMatch) {
-                 req.params.levelId = levelMatch[1];
-                 const { levelId } = req.params;
-                 const { list } = req.query;
-                 console.log(`[API Router] Routing to level fetch handler for ID/Slug: ${levelId}`);
-                 const gdLevelId = parseInt(levelId, 10);
-                 let level = null;
-                 if (!isNaN(gdLevelId)) { level = await prisma.level.findFirst({ where: { levelId: gdLevelId, ...(list && { list: list }) } }); }
-                 if (!level && /^[a-f\d]{24}$/i.test(levelId)) { level = await prisma.level.findFirst({ where: { id: levelId, ...(list && { list: list }) } }); }
-                 if (level) { return res.status(200).json(level); }
-                 else { return res.status(404).json({ message: 'Level not found' }); }
-            }
-
-             if (req.method === 'GET' && path === '/api/lists/main-list/history') {
-                  console.log("[API Router] Routing to getHistoricList handler");
-                 return await listManagementHandlers.getHistoricList(req, res);
-            }
-             if (req.method === 'GET' && path === '/api/layouts') {
-                  console.log("[API Router] Routing to listLayouts handler");
-                 return await layoutHandlers.listLayouts(req, res);
-            }
-            const layoutDetailMatch = path.match(/^\/api\/layouts\/([a-zA-Z0-9]+)$/);
-             if (req.method === 'GET' && layoutDetailMatch && !path.includes('/applicants') && !path.includes('/parts-and-team')) {
-                 req.params.layoutId = layoutDetailMatch[1];
-                  console.log(`[API Router] Routing to getLayoutById handler for ID: ${req.params.layoutId}`);
-                 return await layoutHandlers.getLayoutById(req, res, req.params.layoutId);
-            }
-             const playerStatsMatch = path.match(/^\/api\/player-stats\/([a-zA-Z0-9%_-]+)$/); 
-             if (req.method === 'GET' && playerStatsMatch) {
-                 req.params.playerName = playerStatsMatch[1];
-                  console.log(`[API Router] Routing to getPlayerStats handler for player: ${req.params.playerName}`);
-                 return await getPlayerStats(req, res); 
-            }
-
-
-            // --- If none of the public routes matched, apply Authentication ---
-            console.log(`[API Router] Path ${path} did not match public routes. Applying authentication.`);
-            authenticateToken(req, res, async () => {
-                // Route handler logic inside authenticateToken callback
-                console.log(`[API Router] Authentication successful for ${req.method} ${path}. Routing protected request...`);
-
-                if (req.method === 'GET' && path === '/api/users') return await userHandlers.getUser(req, res, req.user);
-                if (req.method === 'POST' && path === '/api/users') return await userHandlers.pinRecord(req, res, req.user);
-                if (req.method === 'POST' && path === '/api/layout-reports') return await moderationHandlers.createLayoutReport(req, res, req.user);
-
-                if (req.method === 'POST' && path === '/api/submissions/create') {
-                    return await submissionHandlers.createSubmission(req, res, req.user);
-                }
-
-                // Personal Records
-                if (path === '/api/personal-records') {
-                    if (req.method === 'GET') return await personalRecordHandlers.listPersonalRecords(req, res, req.user);
-                    if (req.method === 'POST') return await personalRecordHandlers.createPersonalRecord(req, res, req.user);
-                    if (req.method === 'DELETE') return await personalRecordHandlers.deletePersonalRecord(req, res, req.user);
-                }
-                const prDetailMatch = path.match(/^\/api\/personal-records\/([a-zA-Z0-9]+)$/);
-                if (prDetailMatch) {
-                    req.params = { recordId: prDetailMatch[1] };
-                    if (req.method === 'GET') return await personalRecordHandlers.getPersonalRecordById(req, res, req.user, req.params.recordId);
-                    if (req.method === 'PUT') return await personalRecordHandlers.updatePersonalRecord(req, res, req.user, req.params.recordId);
-                }
-
-                // Friends
-                if (path === '/api/friends') {
-                    if (req.method === 'GET') return await friendHandlers.listFriends(req, res, req.user);
-                    if (req.method === 'POST') return await friendHandlers.sendFriendRequest(req, res, req.user);
-                    if (req.method === 'PUT') return await friendHandlers.respondToFriendRequest(req, res, req.user);
-                }
-
-                // Layouts (Create)
-                if (req.method === 'POST' && path === '/api/layouts') return await layoutHandlers.createLayout(req, res, req.user);
-                // Account
-                if (req.method === 'PUT' && path === '/api/account') return await accountHandlers.updateAccount(req, res, req.user);
-
-                // Layout Sub-routes
-                const layoutApplicantsMatch = path.match(/^\/api\/layouts\/([a-zA-Z0-9]+)\/applicants$/);
-                if (req.method === 'GET' && layoutApplicantsMatch) {
-                    req.params = { layoutId: layoutApplicantsMatch[1] };
-                    return await collaborationHandlers.listLayoutApplicants(req, res, req.params.layoutId);
-                }
-                const layoutPartsTeamMatch = path.match(/^\/api\/layouts\/([a-zA-Z0-9]+)\/parts-and-team$/);
-                if (req.method === 'GET' && layoutPartsTeamMatch) {
-                    req.params = { layoutId: layoutPartsTeamMatch[1] };
-                    return await partHandlers.getLayoutPartsAndTeam(req, res, req.params.layoutId);
-                }
-
-                // Collaboration
-                if (req.method === 'POST' && path === '/api/collaboration-requests') return await collaborationHandlers.applyToLayout(req, res, req.user);
-                if (req.method === 'PUT' && path === '/api/collaboration-requests/update') return await collaborationHandlers.updateApplicationStatus(req, res, req.user);
-
-                // Parts
-                if (req.method === 'POST' && path === '/api/parts/create') return await partHandlers.createPart(req, res, req.user);
-                if (req.method === 'PUT' && path === '/api/parts/assign') return await partHandlers.assignPart(req, res, req.user);
-                if (req.method === 'PUT' && path === '/api/parts/status') return await partHandlers.updatePartStatus(req, res, req.user);
-                if (req.method === 'DELETE' && path === '/api/parts/delete') return await partHandlers.deletePart(req, res, req.user);
-
-                // Chat
-                const chatHistoryMatch = path.match(/^\/api\/chat\/history\/([a-zA-Z0-9]+)$/);
-                if (req.method === 'GET' && chatHistoryMatch) {
-                     req.params = { layoutId: chatHistoryMatch[1] };
-                     return await chatHandlers.getConversationHistory(req, res, req.params.layoutId, req.user);
-                }
-                if (req.method === 'POST' && path === '/api/chat/post') return await chatHandlers.postMessage(req, res, req.user);
-
-                // Level History (Protected?)
-                const levelHistoryMatch = path.match(/^\/api\/levels\/([a-zA-Z0-9]+)\/history$/);
-                if (req.method === 'GET' && levelHistoryMatch) {
-                    req.params = { levelId: levelHistoryMatch[1] };
-                    return await listManagementHandlers.getLevelHistory(req, res, req.params.levelId);
-                }
-
-                // --- Admin/Moderator Routes ---
-                if (path.startsWith('/api/admin/')) {
-                    isModeratorOrAdmin(req, res, async () => { // Apply Mod/Admin check
-                        console.log(`[API Router] Admin route check passed for ${req.method} ${path}. Routing...`);
-                        
-                        if (req.method === 'POST' && path === '/api/admin/add-record') {
-                            return await listManagementHandlers.addRecordToList(req, res);
-                        }
-                        
-                        // [NEW] Add the new route for removing a record
-                        if (req.method === 'POST' && path === '/api/admin/remove-record') {
-                            return await listManagementHandlers.removeRecordFromList(req, res);
-                        }
-                        
-                        if (req.method === 'POST' && path === '/api/admin/add-level') return await listManagementHandlers.addLevelToList(req, res);
-                        if (req.method === 'PUT' && path === '/api/admin/move-level') return await listManagementHandlers.moveLevelInList(req, res);
-                        if (req.method === 'DELETE' && path === '/api/admin/remove-level') return await listManagementHandlers.removeLevelFromList(req, res);
-                        if (req.method === 'PUT' && path === '/api/admin/update-level') return await listManagementHandlers.updateLevel(req, res);
-                        if (req.method === 'GET' && path === '/api/admin/submissions') return await moderationHandlers.listSubmissions(req, res);
-                        if (req.method === 'POST' && path === '/api/admin/update-submission') return await moderationHandlers.updateSubmissionStatus(req, res);
-                        if (req.method === 'GET' && path === '/api/admin/layout-reports') return await moderationHandlers.listLayoutReports(req, res);
-                        if (req.method === 'PUT' && path === '/api/admin/layout-reports') return await moderationHandlers.updateReportStatus(req, res);
-                        if (req.method === 'DELETE' && path === '/api/admin/layouts') return await layoutHandlers.deleteLayoutByAdmin(req, res);
-                        if (req.method === 'PUT' && path === '/api/admin/users/ban') return await moderationHandlers.banUserFromWorkshop(req, res);
-
-                        console.log(`[API Router] Admin route not matched: ${req.method} ${path}`);
-                        res.status(440).json({ message: 'Admin route not found.' });
-                    });
-                     return; 
-                }
-
-                console.log(`[API Router] Authenticated route not found: ${req.method} ${path}`);
-                res.status(404).json({ message: 'API endpoint not found.' });
-
-            }); 
-
-        } catch (error) {
-            console.error("[API Router] Unhandled error during routing:", error);
-            if (!res.headersSent) {
-                res.status(500).json({ message: 'Internal Server Error' });
-            }
-        }
-    }); 
+    if (path === '/api/records/create' && req.method === 'POST') {
+      return levelRecordHandlers.createOrUpdateLevelRecord(req, res, decodedToken);
+    }
+    else if (path === '/api/users') {
+      if (req.method === 'GET') return userHandlers.getUser(req, res, decodedToken);
+      if (req.method === 'POST') return userHandlers.pinRecord(req, res, decodedToken);
+    } 
+    else if (path === '/api/levels' && req.method === 'POST') {
+      return listManagementHandlers.createLevelByUser(req, res, decodedToken);
+    }
+    else if (path === '/api/layout-reports' && req.method === 'POST') {
+      return moderationHandlers.createLayoutReport(req, res, decodedToken);
+    } 
+    else if (path === '/api/personal-records') {
+      if (req.method === 'GET') return personalRecordHandlers.listPersonalRecords(req, res, decodedToken);
+      if (req.method === 'POST') return personalRecordHandlers.createPersonalRecord(req, res, decodedToken);
+      if (req.method === 'DELETE') return personalRecordHandlers.deletePersonalRecord(req, res, decodedToken);
+    }
+    else if (path === '/api/completion-submissions/create' && req.method === 'POST') {
+      return completionHandlers.createCompletionSubmission(req, res, decodedToken);
+    }
+    else if (path === '/api/completion-submissions/my-completions' && req.method === 'GET') {
+      return completionHandlers.listUserCompletions(req, res, decodedToken);
+    }
+    else if (path.match(/^\/api\/personal-records\/[a-zA-Z0-9]+$/)) {
+        const recordId = path.split('/')[3];
+        if (req.method === 'GET') return personalRecordHandlers.getPersonalRecordById(req, res, decodedToken, recordId);
+        if (req.method === 'PUT') return personalRecordHandlers.updatePersonalRecord(req, res, decodedToken, recordId);
+    }
+    else if (path === '/api/friends') {
+      if (req.method === 'GET') return friendHandlers.listFriends(req, res, decodedToken);
+      if (req.method === 'POST') return friendHandlers.sendFriendRequest(req, res, decodedToken);
+      if (req.method === 'PUT') return friendHandlers.respondToFriendRequest(req, res, decodedToken);
+    } 
+    else if (path === '/api/layouts' && req.method === 'POST') {
+      return layoutHandlers.createLayout(req, res, decodedToken);
+    } 
+    else if (path === '/api/account' && req.method === 'PUT') {
+        return accountHandlers.updateAccount(req, res, decodedToken);
+    }
+    else if (path.match(/^\/api\/layouts\/[a-zA-Z0-9]+\/(applicants|parts-and-team)$/) && req.method === 'GET') {
+      const [, , , layoutId, subRoute] = path.split('/');
+      if (subRoute === 'applicants') return collaborationHandlers.listLayoutApplicants(req, res, layoutId);
+      if (subRoute === 'parts-and-team') return partHandlers.getLayoutPartsAndTeam(req, res, layoutId);
+    } 
+    else if (path === '/api/collaboration-requests' && req.method === 'POST') {
+      return collaborationHandlers.applyToLayout(req, res, decodedToken);
+    } 
+    else if (path === '/api/collaboration-requests/update' && req.method === 'PUT') {
+      return collaborationHandlers.updateApplicationStatus(req, res, decodedToken);
+    } 
+    else if (path === '/api/parts/create' && req.method === 'POST') {
+      return partHandlers.createPart(req, res, decodedToken);
+    } 
+    else if (path === '/api/parts/assign' && req.method === 'PUT') {
+      return partHandlers.assignPart(req, res, decodedToken);
+    } 
+    else if (path === '/api/parts/status' && req.method === 'PUT') {
+      return partHandlers.updatePartStatus(req, res, decodedToken);
+    } 
+    else if (path === '/api/parts/delete' && req.method === 'DELETE') {
+      return partHandlers.deletePart(req, res, decodedToken);
+    } 
+    else if (path.match(/^\/api\/chat\/history\/.+$/) && req.method === 'GET') {
+      const layoutId = path.split('/')[4];
+      return chatHandlers.getConversationHistory(req, res, layoutId, decodedToken);
+    } 
+    else if (path === '/api/chat/post' && req.method === 'POST') {
+      return chatHandlers.postMessage(req, res, decodedToken);
+    }
+    else if (path.match(/^\/api\/levels\/[a-zA-Z0-9]+\/history$/) && req.method === 'GET') {
+        const levelId = path.split('/')[3];
+        return listManagementHandlers.getLevelHistory(req, res, levelId);
+    }
+    else if (path.startsWith('/api/admin/')) {
+      if (!['ADMIN', 'MODERATOR'].includes(decodedToken.role)) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+      if (path === '/api/admin/add-level' && req.method === 'POST') return listManagementHandlers.addLevelToList(req, res);
+      if (path === '/api/admin/move-level' && req.method === 'PUT') return listManagementHandlers.moveLevelInList(req, res);
+      if (path === '/api/admin/remove-level' && req.method === 'DELETE') return listManagementHandlers.removeLevelFromList(req, res);
+      if (path === '/api/admin/submissions' && req.method === 'GET') return moderationHandlers.listSubmissions(req, res);
+      if (path === '/api/admin/update-submission' && req.method === 'POST') return moderationHandlers.updateSubmissionStatus(req, res);
+      if (path === '/api/admin/layout-reports' && req.method === 'GET') return moderationHandlers.listLayoutReports(req, res);
+      if (path === '/api/admin/layout-reports' && req.method === 'PUT') return moderationHandlers.updateReportStatus(req, res);
+      if (path === '/api/admin/layouts' && req.method === 'DELETE') return layoutHandlers.deleteLayoutByAdmin(req, res);
+      if (path === '/api/admin/users/ban' && req.method === 'PUT') return moderationHandlers.banUserFromWorkshop(req, res);
+      if (path === '/api/admin/completion-submissions' && req.method === 'GET') return completionHandlers.listAllCompletions(req, res);
+      if (path === '/api/admin/completion-submissions/remove' && req.method === 'POST') return completionHandlers.removeCompletionRecord(req, res);
+    } 
+    else {
+      return res.status(404).json({ message: `Route ${req.method} ${path} not found.` });
+    }
+  }
 }
