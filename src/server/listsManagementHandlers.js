@@ -51,7 +51,14 @@ export async function removeLevelFromList(req, res) {
         },
       });
 
+      // --- THIS IS THE FIX ---
+      // Delete all records associated with this level first
+      await tx.levelRecord.deleteMany({ where: { levelId: levelId } });
+      // --- END OF FIX ---
+
+      // Now we can safely delete the level
       await tx.level.delete({ where: { id: levelId } });
+      
       await tx.level.updateMany({ where: { list: levelToRemove.list, placement: { gt: levelToRemove.placement } }, data: { placement: { decrement: 1 } } });
       return { message: `${levelToRemove.name} removed successfully.` };
     });
@@ -74,7 +81,6 @@ export async function moveLevelInList(req, res) {
 
       if (oldPlacement !== newPlacement) {
         if (oldPlacement > newPlacement) {
-          // --- THIS IS THE LINE I FIXED ---
           await tx.level.updateMany({ where: { list, placement: { gte: newPlacement, lt: oldPlacement } }, data: { placement: { increment: 1 } } });
         } else {
           await tx.level.updateMany({ where: { list, placement: { gt: oldPlacement, lte: newPlacement } }, data: { placement: { decrement: 1 } } });
@@ -191,9 +197,8 @@ export async function getHistoricList(req, res) {
   }
 }
 
-// --- THIS FUNCTION IS NOW UPDATED ---
 export async function createLevelByUser(req, res, decodedToken) {
-  const { levelName, levelId, videoId, list, attempts, thumbnailUrl } = req.body; // <-- I'VE ADDED thumbnailUrl
+  const { levelName, levelId, videoId, list, attempts, thumbnailUrl } = req.body;
   if (!levelName || !levelId || !videoId || !list) {
     return res.status(400).json({ message: 'Level Name, Level ID, Video ID, and List are required.' });
   }
@@ -214,7 +219,7 @@ export async function createLevelByUser(req, res, decodedToken) {
         placement: newPlacement,
         list: list,
         attempts: attempts ? parseInt(attempts, 10) : null,
-        thumbnailUrl: thumbnailUrl || null, // <-- I'VE ADDED THIS (saves as null if empty)
+        thumbnailUrl: thumbnailUrl || null,
       },
     });
     return res.status(201).json(newLevel);
