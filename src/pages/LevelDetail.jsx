@@ -1,13 +1,12 @@
-// src/pages/LevelDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
-import { ChevronLeft, Trash2, ChevronDown, ChevronUp, PlusCircle } from 'lucide-react'; // <-- Import PlusCircle
+import { ChevronLeft, Trash2, ChevronDown, ChevronUp, PlusCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { getVideoDetails } from '../utils/videoUtils.js';
-import AddRecordModal from '../components/AddRecordModal.jsx'; // <-- Import the new modal
+import AddRecordModal from '../components/AddRecordModal.jsx';
 
 export default function LevelDetail() {
   const { listType, levelId } = useParams();
@@ -23,15 +22,13 @@ export default function LevelDetail() {
   
   const [isCopied, setIsCopied] = useState(false);
   const [embedInfo, setEmbedInfo] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false); // <-- State for the new modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchLevelAndHistory = async () => {
-    // Don't set loading to true on a re-fetch, just for the initial load
     if (!level) setIsLoading(true); 
     setError(null);
     setHistory([]);
     try {
-      // Use the actual 'levelId' from the URL to fetch the level
       const levelResponse = await axios.get(`/api/level/${levelId}?list=${listType}-list`);
       setLevel(levelResponse.data);
       
@@ -81,7 +78,7 @@ export default function LevelDetail() {
         { levelId: level.id, recordVideoId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      fetchLevelAndHistory(); // Re-fetch data
+      fetchLevelAndHistory(); 
     } catch (err) {
       alert(`Failed to remove record: ${err.response?.data?.message || 'Server error'}`);
     }
@@ -143,7 +140,6 @@ export default function LevelDetail() {
             </div>
           )}
 
-          {/* --- UPDATED EMBED BLOCK --- */}
           {embedInfo && embedInfo.embedUrl ? (
             <div className="aspect-video w-full border-2 border-gray-300 dark:border-accent/30 rounded-xl overflow-hidden bg-black">
               {embedInfo.type === 'iframe' ? (
@@ -198,12 +194,11 @@ export default function LevelDetail() {
           </div>
         )}
 
-        {/* --- RECORDS BLOCK (NOW UPDATED) --- */}
         <div className="bg-white dark:bg-ui-bg/60 border border-gray-200 dark:border-accent/30 backdrop-blur-sm p-6 rounded-lg shadow-inner">
           <div className="flex justify-center items-center gap-4 mb-4">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t('records')}</h2>
             
-            {/* --- ADD RECORD BUTTON --- */}
+            {/* The condition `user &&` ensures ANY logged in user sees this */}
             {user && (
               <button
                 onClick={() => setIsModalOpen(true)}
@@ -213,8 +208,6 @@ export default function LevelDetail() {
                 <PlusCircle size={24} />
               </button>
             )}
-            {/* --- END OF BUTTON --- */}
-
           </div>
           
           <ul className="text-center space-y-2 text-lg">
@@ -225,7 +218,6 @@ export default function LevelDetail() {
               </button>
             </li>
 
-            {/* Sort records by percent, descending */}
             {level.records?.sort((a, b) => b.percent - a.percent).map((record, index) => (
               record.videoId && (
                 <li key={index} className="flex items-center justify-center gap-2 group text-gray-800 dark:text-gray-200">
@@ -253,13 +245,12 @@ export default function LevelDetail() {
         </div>
       </div>
 
-      {/* --- ADD MODAL COMPONENT --- */}
       {isModalOpen && (
         <AddRecordModal
-          levelId={level.id} // Pass the actual database ID
+          levelId={level.id}
           onClose={() => setIsModalOpen(false)}
           onRecordAdded={() => {
-            fetchLevelAndHistory(); // Re-fetch the level to show the new record
+            fetchLevelAndHistory(); 
           }}
         />
       )}

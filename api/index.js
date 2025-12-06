@@ -13,7 +13,6 @@ import * as chatHandlers from '../src/server/chatHandlers.js';
 import * as listManagementHandlers from '../src/server/listsManagementHandlers.js';
 import * as completionHandlers from '../src/server/completionHandlers.js';
 import * as levelRecordHandlers from '../src/server/levelRecordHandlers.js';
-// (The bad import for 'submissionHandlers.js' is now gone)
 
 const prisma = new PrismaClient();
 
@@ -174,6 +173,9 @@ export default async function handler(req, res) {
       if (path === '/api/admin/users/ban' && req.method === 'PUT') return moderationHandlers.banUserFromWorkshop(req, res);
       if (path === '/api/admin/completion-submissions' && req.method === 'GET') return completionHandlers.listAllCompletions(req, res);
       if (path === '/api/admin/completion-submissions/remove' && req.method === 'POST') return completionHandlers.removeCompletionRecord(req, res);
+      // --- I ADDED THIS ROUTE ---
+      if (path === '/api/admin/remove-record' && req.method === 'POST') return levelRecordHandlers.removeLevelRecord(req, res);
+      // --------------------------
     } 
     else {
       return res.status(404).json({ message: `Route ${req.method} ${path} not found.` });
