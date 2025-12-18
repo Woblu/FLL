@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
+import { put } from '@vercel/blob'; // Integrated Vercel Blob SDK
 import * as authHandlers from '../src/server/authHandlers.js';
 import * as friendHandlers from '../src/server/friendHandlers.js';
 import * as layoutHandlers from '../src/server/layoutHandlers.js';
@@ -28,7 +29,8 @@ export default async function handler(req, res) {
   const path = url.pathname;
   req.query = Object.fromEntries(url.searchParams);
 
-  if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
+  // Updated Body Parser: Skip parsing if it's an upload to preserve binary stream
+  if (['POST', 'PUT', 'DELETE'].includes(req.method) && path !== '/api/upload') {
     try {
       const chunks = [];
       for await (const chunk of req) { chunks.push(chunk); }
@@ -46,19 +48,14 @@ export default async function handler(req, res) {
     const levelId = parseInt(path.split('/')[3], 10);
     const { list } = req.query;
 
-      console.log(`[API DEBUG] Searching for level with ID: ${levelId} on list: ${list}`); 
-
     if (!list) { return res.status(400).json({ error: 'A list query parameter is required.' }); }
     try {
       const level = await prisma.level.findFirst({ 
         where: { levelId: levelId, list: list },
-        include: {
-          records: true
-        }
+        include: { records: true }
       });
       return level ? res.status(200).json(level) : res.status(404).json({ error: 'Level not found on this list' });
     } catch (error) {
-      console.error(error);
       return res.status(500).json({ error: 'Failed to fetch level data.' });
     }
   } 
@@ -77,11 +74,28 @@ export default async function handler(req, res) {
     const layoutId = path.split('/')[3];
     return layoutHandlers.getLayoutById(req, res, layoutId);
   } 
-  // --- START OF PROTECTED ROUTES ---
+
+  // --- PROTECTED ROUTES ---
   else {
     const decodedToken = getDecodedToken(req);
     if (!decodedToken) {
       return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    // NEW: Vercel Blob Upload Handler
+    if (path === '/api/upload' && req.method === 'POST') {
+      try {
+        const filename = req.query.filename || 'thumbnail.png';
+        // We pass 'req' directly as the body because it is a readable stream
+        const blob = await put(filename, req, {
+          access: 'public',
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+        });
+        return res.status(200).json(blob);
+      } catch (error) {
+        console.error('Blob Upload Error:', error);
+        return res.status(500).json({ error: 'Upload failed: ' + error.message });
+      }
     }
 
     if (path === '/api/records/create' && req.method === 'POST') {
@@ -173,9 +187,7 @@ export default async function handler(req, res) {
       if (path === '/api/admin/users/ban' && req.method === 'PUT') return moderationHandlers.banUserFromWorkshop(req, res);
       if (path === '/api/admin/completion-submissions' && req.method === 'GET') return completionHandlers.listAllCompletions(req, res);
       if (path === '/api/admin/completion-submissions/remove' && req.method === 'POST') return completionHandlers.removeCompletionRecord(req, res);
-      // --- I ADDED THIS ROUTE ---
       if (path === '/api/admin/remove-record' && req.method === 'POST') return levelRecordHandlers.removeLevelRecord(req, res);
-      // --------------------------
     } 
     else {
       return res.status(404).json({ message: `Route ${req.method} ${path} not found.` });
