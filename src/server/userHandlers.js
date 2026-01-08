@@ -63,6 +63,35 @@ export async function getUser(req, res, decodedToken) {
 }
 
 /**
+ * Gets the current authenticated user's data from the database.
+ * @param {import('http').IncomingMessage} req The request object.
+ * @param {import('http').ServerResponse} res The response object.
+ * @param {object} decodedToken The verified JWT payload.
+ */
+export async function getCurrentUser(req, res, decodedToken) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: decodedToken.userId },
+      select: { id: true, username: true, email: true, role: true }
+    });
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    return res.status(200).json({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role
+    });
+  } catch (error) {
+    console.error("Get current user error:", error);
+    return res.status(500).json({ message: 'Error fetching user data.' });
+  }
+}
+
+/**
  * Pins or unpins a record for the authenticated user.
  * @param {import('http').IncomingMessage} req The request object.
  * @param {import('http').ServerResponse} res The response object.

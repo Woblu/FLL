@@ -101,6 +101,9 @@ export default async function handler(req, res) {
     if (path === '/api/records/create' && req.method === 'POST') {
       return levelRecordHandlers.createOrUpdateLevelRecord(req, res, decodedToken);
     }
+    else if (path === '/api/me' && req.method === 'GET') {
+      return userHandlers.getCurrentUser(req, res, decodedToken);
+    }
     else if (path === '/api/users') {
       if (req.method === 'GET') return userHandlers.getUser(req, res, decodedToken);
       if (req.method === 'POST') return userHandlers.pinRecord(req, res, decodedToken);
