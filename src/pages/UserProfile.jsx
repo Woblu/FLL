@@ -97,14 +97,10 @@ export default function UserProfile() {
               <Award className="text-yellow-400" /> Pinned Completion
             </h2>
             {profile.pinnedRecord ? (
-                <LevelCard level={profile.pinnedRecord} listType="progression" />
-            ) : isOwnProfile ? (
-                <Link to="/progression" className="flex items-center justify-center h-48 text-center text-gray-500 border-2 border-dashed border-gray-700 p-6 rounded-lg hover:bg-gray-800 hover:text-cyan-400 transition-colors">
-                  You haven't pinned a record yet. <br/> Go to your Progression Tracker to pin your hardest completion!
-                </Link>
+                <LevelCard level={profile.pinnedRecord} listType="main" />
             ) : (
                 <div className="flex items-center justify-center h-48 text-center text-gray-500 border-2 border-dashed border-gray-700 p-6 rounded-lg">
-                  This player hasn't pinned a record.
+                  {isOwnProfile ? 'You haven\'t pinned a record yet.' : 'This player hasn\'t pinned a record.'}
                 </div>
             )}
           </div>
@@ -127,22 +123,6 @@ export default function UserProfile() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      
-      {/* Full Progression List */}
-      <div>
-        <h2 className="text-3xl font-bold mb-6">Completion Log</h2>
-        <div className="flex flex-col gap-4">
-          {profile.progressionTracker.length > 0 ? (
-            profile.progressionTracker.map((record, index) => (
-              <LevelCard key={record.id} level={record} index={index} listType="progression" />
-            ))
-          ) : (
-            <div className="text-center text-gray-500 border-2 border-dashed border-gray-700 p-10 rounded-lg">
-              <p>This user hasn't added any completed demons yet.</p>
-            </div>
-          )}
         </div>
       </div>
     </div>

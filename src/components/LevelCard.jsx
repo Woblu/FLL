@@ -1,13 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext.jsx";
-import { Pencil, Trash2, Pin, PinOff } from 'lucide-react';
 import { getVideoDetails } from '../utils/videoUtils.js';
 
-export default function LevelCard({ level, index, listType, onEdit, onDelete, onPin, pinnedRecordId }) {
+export default function LevelCard({ level, index, listType }) {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const isPinned = level.id === pinnedRecordId;
 
   const videoUrl = level.videoUrl || level.videoId;
   const levelName = level.name || level.levelName || '[Name Missing]';
@@ -25,12 +23,7 @@ export default function LevelCard({ level, index, listType, onEdit, onDelete, on
   // --- END OF FIX ---
 
   const handleClick = () => {
-    let path;
-    if (listType === 'progression') {
-      path = `/progression/${level.id}`;
-    } else {
-      path = `/level/${listType}/${level.levelId || level.id}`;
-    }
+    const path = `/level/${listType}/${level.levelId || level.id}`;
     
     if (level.id || level.levelId) {
       navigate(path);
@@ -53,11 +46,6 @@ export default function LevelCard({ level, index, listType, onEdit, onDelete, on
           // Add error handling in case the manual link is broken
           onError={(e) => { e.target.src = 'https://i.imgur.com/K8x1g1U.png'; }}
         />
-        {isPinned && listType === 'progression' && (
-          <div className="absolute top-1 right-1 bg-yellow-400 p-1 rounded-full">
-            <Pin size={12} className="text-gray-900"/>
-          </div>
-        )}
       </div>
 
       <div className="flex flex-col flex-grow text-center sm:text-left">
@@ -70,40 +58,6 @@ export default function LevelCard({ level, index, listType, onEdit, onDelete, on
         </p>
       </div>
 
-      {listType === 'progression' && (
-        <div className="flex flex-col sm:flex-row gap-1 z-10">
-          {onPin && (
-            <button 
-              type="button" 
-              onClick={(e) => { e.stopPropagation(); onPin(isPinned ? null : level.id); }} 
-              className={`p-2 rounded-full ${isPinned ? 'text-yellow-400 bg-yellow-500/20' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-accent/20'}`}
-              title={isPinned ? "Unpin Record" : "Pin Record"}
-            >
-              {isPinned ? <PinOff className="w-5 h-5" /> : <Pin className="w-5 h-5" />}
-            </button>
-          )}
-          {onEdit && (
-            <button 
-              type="button" 
-              onClick={(e) => { e.stopPropagation(); onEdit(level); }} 
-              className="p-2 text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-accent/20 rounded-full"
-              title="Edit Record"
-            >
-              <Pencil className="w-5 h-5" />
-            </button>
-          )}
-          {onDelete && (
-            <button 
-              type="button" 
-              onClick={(e) => { e.stopPropagation(); onDelete(level.id); }} 
-              className="p-2 text-red-500 hover:bg-red-500/20 rounded-full"
-              title="Delete Record"
-            >
-              <Trash2 className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 }

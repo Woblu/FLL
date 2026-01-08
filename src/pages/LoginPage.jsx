@@ -26,7 +26,7 @@ export default function LoginPage() {
       if (response.data && response.data.token) {
         console.log('Login successful! Token received.');
         login(response.data.token);
-        navigate('/progression');
+        navigate('/');
       } else {
         // This is a fallback for an unexpected success response
         throw new Error('Login response was invalid.');

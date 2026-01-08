@@ -4,14 +4,13 @@ import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import LevelCard from "../components/LevelCard";
 import { useLanguage } from "../contexts/LanguageContext.jsx";
-import AddPersonalRecordForm from "../components/AddPersonalRecordForm";
-import { PlusCircle, History, X } from 'lucide-react';
+import { History, X } from 'lucide-react';
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const listTitles = {
   main: "Main List", unrated: "Unrated List", platformer: "Platformer List",
   speedhack: "Speedhack List", future: "Future List", challenge: "Challenge List",
-  hdl: "HDL (Hardest Demons List)", progression: "Progression Tracker"
+  hdl: "HDL (Hardest Demons List)"
 };
 
 const HistoryModal = ({ onClose, onFetchHistory }) => {
@@ -54,7 +53,7 @@ export default function Home() {
   const location = useLocation();
   const { t } = useLanguage();
   const { user, token } = useAuth();
-  const currentListType = location.pathname.startsWith('/progression') ? 'progression' : (location.pathname.substring(1) || "main");
+  const currentListType = location.pathname.substring(1) || "main";
   
   const [levels, setLevels] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,14 +62,6 @@ export default function Home() {
   const [historicDate, setHistoricDate] = useState(null);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   
-  const [pinnedRecordId, setPinnedRecordId] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [recordToEdit, setRecordToEdit] = useState(null);
-
-  useEffect(() => {
-    if (user) setPinnedRecordId(user.pinnedRecordId);
-  }, [user]);
-
   const fetchLevels = async (isHistoric = false) => {
     if (!isHistoric) {
         setHistoricDate(null);
@@ -79,21 +70,8 @@ export default function Home() {
     setIsLoading(true);
     setError(null);
     try {
-      let response;
-      if (currentListType === 'progression') {
-        if (!token) { 
-          setLevels([]); 
-          setIsLoading(false);
-          return; 
-        }
-        response = await axios.get('/api/personal-records', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setLevels(response.data.map(record => ({ ...record, id: record.id, name: record.levelName, creator: user.username, videoId: record.videoUrl, thumbnail: record.thumbnailUrl, records: [], list: 'progression' })));
-      } else {
-        response = await axios.get(`/api/lists/${currentListType}-list`);
-        setLevels(response.data);
-      }
+      const response = await axios.get(`/api/lists/${currentListType}-list`);
+      setLevels(response.data);
     } catch (err) {
       console.error("Failed to fetch levels:", err);
       setError(`Failed to load '${listTitles[currentListType]}'. Please try again later.`);
@@ -126,9 +104,7 @@ export default function Home() {
 
   useEffect(() => {
     const handleFocus = () => {
-      if (currentListType !== 'progression') {
-        fetchLevels();
-      }
+      fetchLevels();
     };
 
     window.addEventListener('focus', handleFocus);
@@ -148,24 +124,6 @@ export default function Home() {
     return nameMatch || placementMatch || creatorMatch || verifierMatch;
   });
   
-  const handleOpenEditModal = (record) => { setRecordToEdit(record); setIsModalOpen(true); };
-  const handleOpenAddModal = () => { setRecordToEdit(null); setIsModalOpen(true); };
-
-  const handleDelete = async (recordId) => {
-    if (!window.confirm('Are you sure you want to delete this record?')) return;
-    try {
-      await axios.delete('/api/personal-records', { headers: { Authorization: `Bearer ${token}` }, data: { recordId } });
-      fetchLevels();
-    } catch (err) { alert(err.response?.data?.message || 'Failed to delete record.'); }
-  };
-
-  const handlePinRecord = async (recordId) => {
-    try {
-      await axios.post('/api/users', { action: 'pin', recordId }, { headers: { Authorization: `Bearer ${token}` } });
-      setPinnedRecordId(recordId);
-    } catch(err) { alert(err.response?.data?.message || 'Failed to pin record.'); }
-  };
-  
   return (
     <>
       {isHistoryModalOpen && <HistoryModal onClose={() => setIsHistoryModalOpen(false)} onFetchHistory={fetchHistoricList} />}
@@ -174,14 +132,6 @@ export default function Home() {
           <h1 className="font-poppins text-5xl font-bold text-center capitalize break-words text-gray-900 dark:text-white">
             {listTitles[currentListType]}
           </h1>
-          {currentListType === 'progression' && user && (
-            <button 
-              onClick={handleOpenAddModal}
-              className="absolute right-0 flex items-center gap-2 px-4 py-2 rounded-lg font-semibold bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-gradient-to-r dark:from-accent dark:to-brand-cyan dark:hover:opacity-90 transition-all hover:scale-105 text-sm"
-            >
-              <PlusCircle className="w-5 h-5" /> Add Record
-            </button>
-          )}
         </div>
         
         {historicDate && (
@@ -219,10 +169,6 @@ export default function Home() {
                 key={level.id || level.levelId || index} 
                 level={level} 
                 listType={currentListType}
-                onEdit={handleOpenEditModal}
-                onDelete={handleDelete}
-                onPin={handlePinRecord}
-                pinnedRecordId={pinnedRecordId}
               />
             ))
           ) : (
@@ -232,14 +178,6 @@ export default function Home() {
           )}
         </div>
       </div>
-      {isModalOpen && (
-        <AddPersonalRecordForm 
-          recordCount={levels.length} 
-          onClose={() => setIsModalOpen(false)} 
-          onRecordAdded={fetchLevels}
-          existingRecord={recordToEdit}
-        />
-      )}
     </>
   );
 }

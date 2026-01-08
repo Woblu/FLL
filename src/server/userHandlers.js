@@ -53,7 +53,7 @@ export async function getUser(req, res, decodedToken) {
       return res.status(200).json({
         id: profileUser.id, username: profileUser.username, createdAt: profileUser.createdAt, friendStatus,
         stats: { totalDemons, averageAttempts },
-        pinnedRecord, progressionTracker: personalRecords,
+        pinnedRecord,
       });
     }
   } catch (error) {

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
@@ -28,20 +28,24 @@ export const AuthProvider = ({ children }) => {
     try {
       axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
       const response = await axios.get('/api/me');
+      console.log('Fetched user data from API:', response.data);
       setUser({
         id: response.data.id,
         username: response.data.username,
         role: response.data.role,
       });
+      console.log('User role set to:', response.data.role);
       return true;
     } catch (error) {
       console.error("Failed to fetch user data:", error);
+      console.error("Error details:", error.response?.data || error.message);
       // If token is invalid, clear it
       if (error.response?.status === 401) {
         signOut();
         return false;
       }
       // Fallback to JWT data if API call fails
+      console.warn("Falling back to JWT token data");
       try {
         const decodedToken = jwtDecode(authToken);
         setUser({
@@ -49,6 +53,7 @@ export const AuthProvider = ({ children }) => {
           username: decodedToken.username,
           role: decodedToken.role,
         });
+        console.log('Using JWT role (may be outdated):', decodedToken.role);
         return true;
       } catch (decodeError) {
         console.error("Invalid token found, logging out.", decodeError);
@@ -89,11 +94,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Refresh user data from database (useful when role is updated)
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     if (token) {
       await fetchUserData(token);
     }
-  };
+  }, [token]);
 
   // 4. Renamed to signOut to match the function name
   const value = { user, token, loading, login, signOut, logout, refreshUser };

@@ -63,7 +63,7 @@ export default function AddPersonalRecordForm({ onClose, onRecordAdded, recordCo
       <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
         <header className="relative p-4 border-b border-gray-700 flex justify-end items-center">
           <h2 className="absolute left-1/2 -translate-x-1/2 text-xl font-bold text-gray-100">
-            {isEditMode ? 'Edit Record' : 'Add to Progression List'}
+            {isEditMode ? 'Edit Record' : 'Add Record'}
           </h2>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-600 z-10">
             <X className="w-6 h-6 text-gray-300" />

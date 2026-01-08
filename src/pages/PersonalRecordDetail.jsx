@@ -42,7 +42,7 @@ export default function PersonalRecordDetail() {
         headers: { Authorization: `Bearer ${token}` },
         data: { recordId: record.id }
       });
-      navigate('/progression');
+      navigate('/');
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to delete record.');
     }
@@ -56,8 +56,8 @@ export default function PersonalRecordDetail() {
     return (
       <div className="text-center p-8">
         <h1 className="text-2xl font-bold text-red-500">Record Not Found</h1>
-        <button onClick={() => navigate('/progression')} className="mt-4 inline-flex items-center text-cyan-400 hover:underline">
-          <ChevronLeft size={16} /> Go Back to Progression List
+          <button onClick={() => navigate('/')} className="mt-4 inline-flex items-center text-cyan-400 hover:underline">
+          <ChevronLeft size={16} /> Go Back to Home
         </button>
       </div>
     );
@@ -70,22 +70,14 @@ export default function PersonalRecordDetail() {
     <div className="max-w-4xl mx-auto p-4 sm:p-6 text-gray-900 dark:text-gray-100">
       <div className="relative bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg mb-6">
         <button 
-          onClick={() => navigate('/progression')} 
+          onClick={() => navigate('/')} 
           className="absolute top-4 left-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-          aria-label="Go back to list"
+          aria-label="Go back to home"
         >
           <ChevronLeft size={24} />
         </button>
         
         <div className="absolute top-4 right-4 z-10 flex gap-2">
-          <button
-            onClick={() => navigate('/progression', { state: { editRecordId: record.id } })}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 transition-colors"
-            aria-label="Edit Record"
-            title="Edit Record"
-          >
-            <Pencil size={20} />
-          </button>
           
           <button
             onClick={handleDelete}

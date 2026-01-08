@@ -9,7 +9,7 @@ export default function SettingsMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const { t } = useLanguage();
 
   const handleLogout = () => {
@@ -27,6 +27,13 @@ export default function SettingsMenu() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Refresh user data when menu opens to ensure role is up-to-date
+  useEffect(() => {
+    if (isOpen && refreshUser) {
+      refreshUser().catch(err => console.error('Failed to refresh user:', err));
+    }
+  }, [isOpen]); // Only depend on isOpen to avoid infinite loops
 
   if (!user) return null;
 
@@ -63,7 +70,7 @@ export default function SettingsMenu() {
             <User className="w-4 h-4" /> {t('myAccount')}
           </Link>
 
-          {user?.role === 'ADMIN' && (
+          {(user?.role === 'ADMIN' || user?.role === 'admin') && (
             <Link
               to="/admin"
               onClick={() => setIsOpen(false)}
@@ -71,6 +78,27 @@ export default function SettingsMenu() {
             >
               <LayoutDashboard className="w-4 h-4" /> {t('adminDashboard')}
             </Link>
+          )}
+          
+          {/* Debug: Show current role and refresh button */}
+          {process.env.NODE_ENV === 'development' && (
+            <>
+              <div className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-accent/50">
+                Debug: Role = {user?.role || 'null'} (Type: {typeof user?.role})
+              </div>
+              <button
+                onClick={async () => {
+                  console.log('Manual refresh triggered, current user:', user);
+                  await refreshUser();
+                  // Force a re-render by toggling state
+                  setIsOpen(false);
+                  setTimeout(() => setIsOpen(true), 100);
+                }}
+                className="flex items-center w-full gap-3 px-4 py-2 text-xs text-blue-500 hover:bg-blue-500/10 transition-colors"
+              >
+                🔄 Refresh User Data
+              </button>
+            </>
           )}
 
           <div className="border-t border-gray-200 dark:border-accent/50 my-1"></div>
