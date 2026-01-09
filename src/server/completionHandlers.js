@@ -71,10 +71,14 @@ export async function createCompletionSubmission(req, res, decodedToken) {
  */
 export async function listUserCompletions(req, res, decodedToken) {
   try {
+    const { list } = req.query; // Optional list filter
+    
+    const whereClause = {
+      username: decodedToken.username
+    };
+    
     const completions = await prisma.levelRecord.findMany({
-      where: {
-        username: decodedToken.username
-      },
+      where: whereClause,
       include: {
         level: {
           select: {
@@ -82,7 +86,8 @@ export async function listUserCompletions(req, res, decodedToken) {
             name: true,
             placement: true,
             creator: true,
-            verifier: true
+            verifier: true,
+            list: true
           }
         }
       },
@@ -93,13 +98,20 @@ export async function listUserCompletions(req, res, decodedToken) {
       }
     });
 
+    // Filter by list if provided
+    let filteredCompletions = completions;
+    if (list) {
+      filteredCompletions = completions.filter(record => record.level.list === list);
+    }
+
     // Transform the data to match the expected format
-    const transformedCompletions = completions.map(record => ({
+    const transformedCompletions = filteredCompletions.map(record => ({
       id: record.level.id,
       name: record.level.name,
       placement: record.level.placement,
       creator: record.level.creator,
       verifier: record.level.verifier,
+      list: record.level.list,
       records: [{
         username: record.username,
         percent: record.percent,
@@ -110,6 +122,71 @@ export async function listUserCompletions(req, res, decodedToken) {
     return res.status(200).json(transformedCompletions);
   } catch (error) {
     console.error('List user completions error:', error);
+    return res.status(500).json({ message: 'Internal server error.' });
+  }
+}
+
+/**
+ * (PUBLIC) Lists all completion records for a specific list (for leaderboard)
+ */
+export async function listAllCompletionsForList(req, res) {
+  try {
+    const { list } = req.query;
+    
+    if (!list) {
+      return res.status(400).json({ message: 'List parameter is required.' });
+    }
+
+    const records = await prisma.levelRecord.findMany({
+      where: {
+        level: {
+          list: list
+        }
+      },
+      include: {
+        level: {
+          select: {
+            id: true,
+            name: true,
+            placement: true,
+            creator: true,
+            verifier: true,
+            list: true
+          }
+        }
+      },
+      orderBy: {
+        level: {
+          placement: 'asc'
+        }
+      }
+    });
+
+    // Group records by level
+    const levelsMap = new Map();
+    records.forEach(record => {
+      const levelId = record.level.id;
+      if (!levelsMap.has(levelId)) {
+        levelsMap.set(levelId, {
+          id: record.level.id,
+          name: record.level.name,
+          placement: record.level.placement,
+          creator: record.level.creator,
+          verifier: record.level.verifier,
+          list: record.level.list,
+          records: []
+        });
+      }
+      levelsMap.get(levelId).records.push({
+        username: record.username,
+        percent: record.percent,
+        videoId: record.videoId
+      });
+    });
+
+    return res.status(200).json(Array.from(levelsMap.values()));
+  } catch (error) {
+    console.error('List all completions for list error:', error);
     return res.status(500).json({ message: 'Internal server error.' });
   }
 }

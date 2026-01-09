@@ -67,6 +67,9 @@ export default async function handler(req, res) {
   else if (path === '/api/lists/main-list/history' && req.method === 'GET') {
     return listManagementHandlers.getHistoricList(req, res);
   }
+  else if (path === '/api/completion-submissions/list-completions' && req.method === 'GET') {
+    return completionHandlers.listAllCompletionsForList(req, res);
+  }
   else if (path === '/api/layouts' && req.method === 'GET') {
     return layoutHandlers.listLayouts(req, res);
   } 
