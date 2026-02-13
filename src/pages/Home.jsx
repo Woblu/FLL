@@ -10,7 +10,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 const listTitles = {
   main: "Main List", unrated: "Unrated List", platformer: "Platformer List",
   speedhack: "Speedhack List", future: "Future List", challenge: "Challenge List",
-  hdl: "HDL (Hardest Demons List)"
+  dl: "DL (Demon List)", hdl: "HDL (Hardest Demons List)"
 };
 
 const HistoryModal = ({ onClose, onFetchHistory }) => {

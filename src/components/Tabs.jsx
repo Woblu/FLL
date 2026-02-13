@@ -12,7 +12,13 @@ export default function Tabs() {
   const [isStatsViewerOpen, setIsStatsViewerOpen] = useState(false);
 
   // Determine the current list from the URL path
-  const currentListType = location.pathname.startsWith('/hdl') ? 'hdl' : 'main';
+  const getCurrentListType = () => {
+    const path = location.pathname;
+    if (path.startsWith('/dl')) return 'dl';
+    if (path.startsWith('/hdl')) return 'hdl';
+    return 'main';
+  };
+  const currentListType = getCurrentListType();
 
   const navLinkClasses = ({ isActive }) => 
     `px-4 py-2 rounded-md font-semibold transition-all duration-300 text-sm whitespace-nowrap flex items-center gap-2
@@ -37,6 +43,9 @@ export default function Tabs() {
 
           {/* Center Navigation */}
           <nav className="hidden md:flex items-center gap-2">
+             <NavLink to="/dl" className={navLinkClasses}>
+                DL
+              </NavLink>
              <NavLink to="/" end className={navLinkClasses}>
                 FLL
               </NavLink>

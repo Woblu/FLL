@@ -71,12 +71,12 @@ export default function StatsViewer({ onClose, title, listType = "main" }) {
       level.records.forEach(record => {
         // Only count as completion if the user is NOT the verifier
         if (record.username !== level.verifier) {
-          if (!completionsByPlayer[record.username]) {
-            completionsByPlayer[record.username] = [];
-          }
+        if (!completionsByPlayer[record.username]) {
+          completionsByPlayer[record.username] = [];
+        }
           // Use a Set-like approach to avoid duplicates
-          if (!completionsByPlayer[record.username].includes(level.placement)) {
-            completionsByPlayer[record.username].push(level.placement);
+        if (!completionsByPlayer[record.username].includes(level.placement)) {
+          completionsByPlayer[record.username].push(level.placement);
           }
         }
       });
