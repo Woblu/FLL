@@ -194,6 +194,7 @@ export default async function handler(req, res) {
       if (path === '/api/admin/completion-submissions' && req.method === 'GET') return completionHandlers.listAllCompletions(req, res);
       if (path === '/api/admin/completion-submissions/remove' && req.method === 'POST') return completionHandlers.removeCompletionRecord(req, res);
       if (path === '/api/admin/remove-record' && req.method === 'POST') return levelRecordHandlers.removeLevelRecord(req, res);
+      if (path === '/api/admin/move-all-levels' && req.method === 'POST') return listManagementHandlers.moveAllLevelsBetweenLists(req, res);
     } 
     else {
       return res.status(404).json({ message: `Route ${req.method} ${path} not found.` });

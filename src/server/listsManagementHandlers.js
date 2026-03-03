@@ -197,6 +197,81 @@ export async function getHistoricList(req, res) {
   }
 }
 
+export async function moveAllLevelsBetweenLists(req, res) {
+  const { fromList, toList } = req.body;
+  if (!fromList || !toList) {
+    return res.status(400).json({ message: 'fromList and toList are required.' });
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      // Get all levels from the source list, ordered by placement
+      const levelsToMove = await tx.level.findMany({
+        where: { list: fromList },
+        orderBy: { placement: 'asc' },
+      });
+
+      if (levelsToMove.length === 0) {
+        return { message: `No levels found in ${fromList} to move.`, moved: 0 };
+      }
+
+      // Get the current highest placement in the destination list
+      const lastLevelInDestination = await tx.level.findFirst({
+        where: { list: toList },
+        orderBy: { placement: 'desc' },
+      });
+      const startPlacement = lastLevelInDestination ? lastLevelInDestination.placement + 1 : 1;
+
+      // Move each level to the destination list with new placements
+      for (let i = 0; i < levelsToMove.length; i++) {
+        const level = levelsToMove[i];
+        const newPlacement = startPlacement + i;
+
+        await tx.level.update({
+          where: { id: level.id },
+          data: {
+            list: toList,
+            placement: newPlacement,
+          },
+        });
+
+        // Log the move in listChange
+        await tx.listChange.create({
+          data: {
+            type: 'MOVE',
+            description: `${level.name} moved from ${fromList} (#${level.placement}) to ${toList} (#${newPlacement})`,
+            list: toList,
+            level: { connect: { id: level.id } },
+          },
+        });
+      }
+
+      // Reorder remaining levels in source list (if any remain)
+      const remainingLevels = await tx.level.findMany({
+        where: { list: fromList },
+        orderBy: { placement: 'asc' },
+      });
+
+      for (let i = 0; i < remainingLevels.length; i++) {
+        await tx.level.update({
+          where: { id: remainingLevels[i].id },
+          data: { placement: i + 1 },
+        });
+      }
+
+      return {
+        message: `Successfully moved ${levelsToMove.length} levels from ${fromList} to ${toList}.`,
+        moved: levelsToMove.length,
+      };
+    });
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("Failed to move levels between lists:", error);
+    return res.status(500).json({ message: error.message || 'Failed to move levels between lists.' });
+  }
+}
+
 export async function createLevelByUser(req, res, decodedToken) {
   const { levelName, levelId, videoId, list, attempts, thumbnailUrl } = req.body;
   if (!levelName || !levelId || !videoId || !list) {
