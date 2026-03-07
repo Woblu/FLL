@@ -24,10 +24,10 @@ export default function AdminDashboard() {
       {/* --- LIST SWITCHER UI --- */}
       <div className="flex justify-center gap-4 mb-8">
         <button
-          onClick={() => setListToManage('dl-list')}
-          className={getButtonClasses('dl-list')}
+          onClick={() => setListToManage('scl-list')}
+          className={getButtonClasses('scl-list')}
         >
-          Manage DL (dl-list)
+          Manage SCL (scl-list)
         </button>
         <button
           onClick={() => setListToManage('main-list')}
