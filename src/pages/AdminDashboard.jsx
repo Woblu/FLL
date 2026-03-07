@@ -30,6 +30,12 @@ export default function AdminDashboard() {
           Manage SCL (scl-list)
         </button>
         <button
+          onClick={() => setListToManage('ddl-list')}
+          className={getButtonClasses('ddl-list')}
+        >
+          Manage DDL (ddl-list)
+        </button>
+        <button
           onClick={() => setListToManage('main-list')}
           className={getButtonClasses('main-list')}
         >

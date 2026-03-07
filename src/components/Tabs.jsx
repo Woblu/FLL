@@ -15,6 +15,7 @@ export default function Tabs() {
   const getCurrentListType = () => {
     const path = location.pathname;
     if (path.startsWith('/scl')) return 'scl';
+    if (path.startsWith('/ddl')) return 'ddl';
     if (path.startsWith('/hdl')) return 'hdl';
     return 'main';
   };
@@ -45,6 +46,9 @@ export default function Tabs() {
           <nav className="hidden md:flex items-center gap-2">
              <NavLink to="/scl" className={navLinkClasses}>
                 SCL
+              </NavLink>
+             <NavLink to="/ddl" className={navLinkClasses}>
+                DDL
               </NavLink>
              <NavLink to="/" end className={navLinkClasses}>
                 FLL
