@@ -1,35 +1,265 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
+/**
+ * @fileoverview Global navigation bar component with tabs, settings, stats viewer, and user menu.
+ * Appears on all pages. Handles desktop and mobile navigation with proper cleanup and event handling.
+ * * @module NavBar
+ */
 
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { NavLink, useLocation, Link } from 'react-router-dom';
+import { BarChart2, LogIn, UserPlus, Menu, X } from 'lucide-react';
+import logo from '../assets/dashrank-logo.webp';
+import { useAuth } from '../contexts/AuthContext.jsx';
+import { useLanguage } from '../contexts/LanguageContext.jsx';
+import StatsViewer from './StatsViewer';
+import SettingsMenu from './SettingsMenu';
+import { LIST_BY_ID, DEFAULT_NAV_LIST_IDS, isStatsViewerListType } from '../config/lists';
+import { useNavbarPrefs } from '../contexts/NavbarPrefsContext.jsx';
+
+/**
+ * Global navigation bar component
+ * Displays tabs, settings, stats viewer, and user menu
+ * @returns {JSX.Element} Navigation bar JSX
+ */
 export default function NavBar() {
-  const tabs = [
-    { name: "Main", path: "/main" },
-    { name: "Unrated", path: "/unrated" },
-    { name: "Platformer", path: "/platformer" },
-    { name: "Future", path: "/future" },
-    { name: "Challenges", path: "/challenges" },
-    { name: "Players", path: "/players" }, // Corrects the path
-  ];
+  const { user } = useAuth();
+  const { t } = useLanguage();
+  const { navListIds } = useNavbarPrefs();
+  const location = useLocation();
+  const mobileMenuRef = useRef(null);
+  const isMountedRef = useRef(true);
+
+  // State management
+  const [isStatsViewerOpen, setIsStatsViewerOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Initialize list type from localStorage or default to 'main'
+  const [listType, setListType] = useState(() => {
+    const stored = localStorage.getItem('lastViewedList');
+    return stored && isStatsViewerListType(stored) ? stored : 'main';
+  });
+
+  // Memoize stats button titles
+  const statsButtonTitles = useMemo(() => ({
+    main: t('main_stats_viewer'),
+    unrated: t('unrated_stats_viewer'),
+    platformer: t('platformer_stats_viewer'),
+    challenge: t('challenge_stats_viewer'),
+    speedhack: t('speedhack_stats_viewer'),
+    ddl: t('ddl_stats_viewer'),
+    future: t('future_stats_viewer'),
+    '10sll': t('ten_second_levels_stats_viewer'),
+    ill: t('impossible_levels_stats_viewer')
+  }), [t]);
+
+  // Memoize navigation tabs (mix-and-match via NavbarPrefsContext → localStorage)
+  const tabs = useMemo(() => {
+    const enabledIds = Array.isArray(navListIds) ? navListIds : DEFAULT_NAV_LIST_IDS;
+    const enabledSet = new Set(enabledIds);
+    const ordered = enabledIds.filter((id) => enabledSet.has(id) && LIST_BY_ID[id]);
+
+    const listTabs = ordered.map((id) => {
+      const l = LIST_BY_ID[id];
+      return { name: t(l.navLabelKey) || l.pageTitle, path: `/${l.id}` };
+    });
+
+    return listTabs;
+  }, [t, navListIds]);
+
+  // Update list type based on current route
+  useEffect(() => {
+    if (!isMountedRef.current) return;
+
+    const currentPathSegment = location.pathname.split('/')[1] || 'main';
+    if (isStatsViewerListType(currentPathSegment)) {
+      setListType(currentPathSegment);
+      localStorage.setItem('lastViewedList', currentPathSegment);
+    } else {
+      // Keep stats viewer listType valid even if user is on non-stats pages (e.g. 10sll)
+      // by not overwriting listType.
+    }
+  }, [location.pathname]);
+
+  // Handle click outside mobile menu
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    function handleClickOutside(event) {
+      if (isMountedRef.current &&
+          mobileMenuRef.current &&
+          !mobileMenuRef.current.contains(event.target)) {
+        setIsMobileMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMobileMenuOpen]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Memoized auth buttons component
+  const AuthButtons = useMemo(() => {
+    if (user) return null;
+
+    return (
+      <div className="flex items-center gap-2">
+        <Link
+          to="/login"
+          className="flex items-center gap-2 px-3 py-2 rounded-md font-semibold bg-button-bg text-text-primary hover:bg-accent/10 transition-colors text-sm whitespace-nowrap"
+        >
+          <LogIn className="w-4 h-4" />
+          <span className="hidden sm:inline">{t('login')}</span>
+        </Link>
+        <Link
+          to="/register"
+          className="flex items-center gap-2 px-3 py-2 rounded-md font-semibold bg-accent text-text-on-ui hover:opacity-90 transition-colors text-sm whitespace-nowrap"
+        >
+          <UserPlus className="w-4 h-4" />
+          <span className="hidden sm:inline">{t('register')}</span>
+        </Link>
+      </div>
+    );
+  }, [user, t]);
+
+  // Handlers
+  const handleStatsViewerOpen = useCallback(() => {
+    if (isMountedRef.current) {
+      setIsStatsViewerOpen(true);
+    }
+  }, []);
+
+  const handleStatsViewerClose = useCallback(() => {
+    if (isMountedRef.current) {
+      setIsStatsViewerOpen(false);
+    }
+  }, []);
+
+  const handleMobileMenuToggle = useCallback(() => {
+    if (isMountedRef.current) {
+      setIsMobileMenuOpen(prev => !prev);
+    }
+  }, []);
+
+  const handleMobileNavClick = useCallback(() => {
+    if (isMountedRef.current) {
+      setIsMobileMenuOpen(false);
+    }
+  }, []);
+
+  // Get current stats title
+  const currentStatsTitle = statsButtonTitles[listType] || statsButtonTitles.main;
 
   return (
-    <div className="bg-white shadow-md mb-6">
-      <div className="max-w-4xl mx-auto flex justify-center gap-2 p-2 overflow-x-auto sm:gap-4 sm:p-4">
-        {tabs.map((tab) => (
-          <NavLink
-            key={tab.name}
-            to={tab.path}
-            className={({ isActive }) =>
-              `px-3 py-2 rounded-lg font-semibold whitespace-nowrap text-sm sm:text-base ${
-                isActive
-                  ? "bg-cyan-600 text-white"
-                  : "text-cyan-600 hover:bg-cyan-100"
-              }`
-            }
+    <>
+      <header className="relative bg-header-bg shadow-lg z-[60] border-b border-primary-bg sticky top-0 overflow-x-clip">
+        <div className="flex flex-row items-center justify-between px-4 py-2.5">
+          {/* Logo */}
+          <div className="flex justify-start flex-shrink-0 mr-4">
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="relative h-12 w-28 shrink-0 overflow-visible">
+                <img
+                  src={logo}
+                  alt="DashRank Logo"
+                  className="absolute left-0 top-1/2 h-24 w-auto max-w-none -translate-y-1/2 object-contain object-left transition-transform duration-200 group-hover:scale-105 origin-left"
+                />
+              </div>
+              <span className="block font-bold text-xl text-accent leading-tight tracking-tight group-hover:drop-shadow-[0_0_12px_rgba(34,211,238,0.7)] transition-shadow">
+                DashRank
+                <span className="ml-2 text-xs font-mono text-text-muted">v1.0</span>
+              </span>
+            </Link>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex flex-1 justify-center overflow-x-auto">
+            <div className="flex items-center gap-2 min-w-max px-1">
+              {tabs.map((tab) => (
+                <NavLink
+                  key={tab.path}
+                  to={tab.path}
+                  className={({ isActive }) =>
+                    `px-3 py-2 rounded-md font-semibold transition-colors text-sm whitespace-nowrap flex items-center gap-2 ${
+                      isActive ? 'bg-accent text-text-on-ui' : 'text-accent hover:bg-accent/20'
+                    }`
+                  }
+                >
+                  {tab.icon && <tab.icon className="w-4 h-4" />}
+                  {tab.name}
+                </NavLink>
+              ))}
+            </div>
+          </nav>
+
+          {/* Right Actions */}
+          <div className="flex justify-end items-center gap-2">
+            <button
+              title={currentStatsTitle}
+              onClick={handleStatsViewerOpen}
+              className="flex items-center gap-2 px-3 py-2 rounded-md font-semibold bg-button-bg text-text-primary hover:bg-accent/10 transition-colors text-sm"
+            >
+              <BarChart2 className="w-4 h-4" />
+              <span className="hidden lg:inline">{currentStatsTitle}</span>
+            </button>
+
+            {user ? <SettingsMenu /> : AuthButtons}
+
+            {/* Mobile Menu Toggle */}
+            <div className="md:hidden ml-1">
+              <button
+                onClick={handleMobileMenuToggle}
+                className="p-2 rounded-md bg-button-bg text-text-primary hover:bg-accent/10 transition-colors"
+                aria-label="Toggle mobile menu"
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div
+            ref={mobileMenuRef}
+            className="md:hidden bg-primary-bg border-b border-primary-bg shadow-lg absolute w-full z-[60]"
           >
-            {tab.name}
-          </NavLink>
-        ))}
-      </div>
-    </div>
+            <div className="bg-header-bg w-full h-full">
+              <div className="px-4 py-3 space-y-2">
+                {tabs.map((tab) => (
+                  <NavLink
+                    key={tab.path}
+                    to={tab.path}
+                    onClick={handleMobileNavClick}
+                    className={({ isActive }) =>
+                      `block px-3 py-2 rounded-md font-semibold transition-colors text-sm flex items-center gap-2 ${
+                        isActive ? 'bg-accent text-text-on-ui' : 'text-accent hover:bg-accent/20'
+                      }`
+                    }
+                  >
+                    {tab.icon && <tab.icon className="w-4 h-4" />}
+                    {tab.name}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Modals */}
+      {isStatsViewerOpen && (
+        <StatsViewer
+          listType={listType}
+          onClose={handleStatsViewerClose}
+          title={currentStatsTitle}
+        />
+      )}
+    </>
   );
 }

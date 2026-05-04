@@ -1,49 +1,327 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  /* Global body styles */
   body {
-    /* Apply a white background and dark text for light mode, and the violet theme for dark mode */
-    @apply bg-white text-gray-800 dark:bg-primary-bg dark:text-text-primary;
+    @apply bg-primary-bg text-text-primary;
+    font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+      sans-serif;
+  }
+
+  /* --- Theme: Cyan (Default Dark) --- */
+  html[data-theme="cyan"] {
+    --color-primary-bg: 17 24 39;
+    --color-ui-bg: 31 41 55;
+    --color-button-bg: 55 65 81;
+    --color-header-bg: 31 41 55;
+    --color-text-primary: 243 244 246;
+    --color-text-muted: 156 163 175;
+    --color-accent: 34 211 238;
+    --color-text-secondary: 103 232 249;
+    --color-text-on-ui: 243 244 246;
+    --color-text-on-header: 243 244 246;
+  }
+
+
+  /* --- Theme: Mono (High Contrast) --- */
+  html[data-theme="mono"] {
+    --color-primary-bg: 255 255 255;    /* Pure White Page */
+    --color-ui-bg: 255 255 255;          /* White Cards */
+    --color-button-bg: 243 244 246;      /* Gray-100 */
+    --color-header-bg: 0 0 0;            /* Black Header */
+    --color-text-primary: 0 0 0;         /* Black Text */
+    --color-text-muted: 64 64 64;        /* Dark Grey */
+    --color-accent: 0 0 0;               /* Black Accent */
+    --color-text-secondary: 0 0 0;       /* Black */
+    --color-text-on-ui: 0 0 0;           /* Black Text on Cards */
+    --color-text-on-header: 255 255 255; /* White Text on Header */
   }
 }
 
-/* Custom Scrollbar Styles */
+/* Landing page and layout enhancements */
 
-/* For Webkit browsers (Chrome, Safari, Edge) */
+.landing-hero-gradient {
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.28), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.24), transparent 55%),
+    transparent;
+}
+
+.landing-orbit {
+  position: absolute;
+  inset: -40%;
+  border-radius: 9999px;
+  border: 1px solid rgba(34, 211, 238, 0.12);
+  box-shadow:
+    0 0 40px rgba(34, 211, 238, 0.25),
+    0 0 120px rgba(56, 189, 248, 0.15);
+  pointer-events: none;
+}
+
+@keyframes float-slow {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes pulse-soft {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 4s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.7s ease-out both;
+}
+
+/* --- List / landing atmosphere (behind side decorations, Demonlist-style depth) --- */
+
+.list-pages-atmosphere-base {
+  background-color: rgb(var(--color-primary-bg));
+}
+
+.list-pages-atmosphere-glow {
+  /* Softer blobs; keep top-left mild so grid + navbar area stay clean */
+  background:
+    radial-gradient(ellipse 100% 70% at 8% 5%, rgb(var(--color-accent) / 0.055), transparent 50%),
+    radial-gradient(ellipse 90% 65% at 100% 12%, rgb(56 189 248 / 0.045), transparent 52%),
+    radial-gradient(ellipse 85% 60% at 92% 92%, rgb(34 211 238 / 0.04), transparent 52%),
+    radial-gradient(ellipse 75% 55% at 5% 95%, rgb(99 102 241 / 0.035), transparent 50%);
+}
+
+.list-pages-atmosphere-grid {
+  background-image:
+    linear-gradient(rgb(var(--color-accent) / 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--color-accent) / 0.08) 1px, transparent 1px);
+  background-size: 48px 48px;
+  /* Center bias kept for sides; anchor higher so the top band stays readable */
+  mask-image: radial-gradient(ellipse 100% 88% at 50% 32%, black 38%, transparent 82%);
+  -webkit-mask-image: radial-gradient(ellipse 100% 88% at 50% 32%, black 38%, transparent 82%);
+}
+
+.list-pages-atmosphere-vignette {
+  box-shadow:
+    inset 0 0 80px 24px rgb(0 0 0 / 0.32),
+    inset 0 0 180px 60px rgb(0 0 0 / 0.14);
+}
+
+.list-pages-atmosphere-noise {
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23a)' opacity='0.55'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  mix-blend-mode: overlay;
+}
+
+html[data-theme='mono'] .list-pages-atmosphere-noise {
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list-pages-atmosphere-glow {
+    filter: none;
+  }
+
+  .animate-float-slow,
+  .animate-pulse-soft,
+  .landing-orbit {
+    animation: none !important;
+  }
+
+  .animate-fade-in-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .animate-bounce,
+  .animate-ping {
+    animation: none !important;
+  }
+}
+
+html[data-theme='mono'] .list-pages-atmosphere-glow {
+  background:
+    radial-gradient(ellipse 100% 80% at 50% 0%, rgb(0 0 0 / 0.06), transparent 55%),
+    radial-gradient(ellipse 90% 70% at 50% 100%, rgb(0 0 0 / 0.05), transparent 55%);
+}
+
+html[data-theme='mono'] .list-pages-atmosphere-grid {
+  background-image:
+    linear-gradient(rgb(0 0 0 / 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(0 0 0 / 0.09) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 100% 88% at 50% 32%, black 38%, transparent 82%);
+  -webkit-mask-image: radial-gradient(ellipse 100% 88% at 50% 32%, black 38%, transparent 82%);
+}
+
+html[data-theme='mono'] .list-pages-atmosphere-vignette {
+  box-shadow: inset 0 0 80px 24px rgb(0 0 0 / 0.08);
+}
+
+/* Default Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #e2e8f0; /* light-gray for light mode */
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #9c27b0; /* accent */
+  background: rgb(var(--color-primary-bg));
   border-radius: 8px;
 }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--color-accent));
+  border-radius: 8px;
+  border: 2px solid rgb(var(--color-primary-bg));
+  background-clip: content-box;
+}
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #af4fb9; /* A slightly lighter accent for hover */
+  opacity: 0.8;
 }
 
-/* Dark mode scrollbar styles */
-.dark .custom-scrollbar::-webkit-scrollbar-track {
-  background: #1c0f33; /* ui-bg */
-}
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #9c27b0; /* accent */
-}
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #af4fb9;
+/* === MONO THEME SPECIFIC OVERRIDES === */
+
+/* 1. LAYOUT BLOCKS */
+html[data-theme="mono"] [class*="bg-ui-bg"] {
+  border: 1px solid #000000 !important;
 }
 
-/* For Firefox */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #9c27b0 #e2e8f0; /* thumb color and track color for light mode */
+/* 2. HEADER CONTAINER & TABS */
+html[data-theme="mono"] .bg-header-bg {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+html[data-theme="mono"] .bg-header-bg a,
+html[data-theme="mono"] .bg-header-bg h1, 
+html[data-theme="mono"] .bg-header-bg span {
+  color: #ffffff !important;
 }
 
-/* Dark mode adjustments for Firefox scrollbar */
-.dark .custom-scrollbar {
-  scrollbar-color: #9c27b0 #1c0f33; /* thumb color and track color for dark mode */
+/* 3. HEADER BUTTONS (Settings, etc.) */
+html[data-theme="mono"] .bg-header-bg button.bg-button-bg {
+  background-color: #ffffff !important;
+  border: 1px solid #000000 !important;
+  color: #000000 !important; 
+}
+html[data-theme="mono"] .bg-header-bg button.bg-button-bg:hover {
+  background-color: #e5e5e5 !important;
+}
+html[data-theme="mono"] .bg-header-bg button.bg-button-bg * {
+  color: #000000 !important;
+  stroke: #000000 !important;
+  fill: transparent;
+}
+
+/* 4. DROPDOWNS inside Header */
+html[data-theme="mono"] .bg-header-bg [class*="absolute"] {
+  background-color: #ffffff !important;
+  border: 1px solid #000000 !important;
+}
+html[data-theme="mono"] .bg-header-bg [class*="absolute"] *,
+html[data-theme="mono"] .bg-header-bg [class*="absolute"] a,
+html[data-theme="mono"] .bg-header-bg [class*="absolute"] span {
+  color: #000000 !important;
+}
+
+/* 5. [FIX] PRIMARY BUTTONS (Enabled Only) */
+/* Force text WHITE on Black Accent buttons ONLY if they are active/enabled */
+html[data-theme="mono"] button.bg-accent:not(:disabled),
+html[data-theme="mono"] a.bg-accent {
+  color: #ffffff !important;
+}
+html[data-theme="mono"] button.bg-accent:not(:disabled) *,
+html[data-theme="mono"] a.bg-accent * {
+  color: #ffffff !important;
+}
+
+/* 5b. [FIX] DISABLED BUTTONS */
+/* Force disabled buttons (like "This is your layout") to be visible Dark Grey */
+html[data-theme="mono"] button:disabled {
+  color: #404040 !important; /* Visible Dark Grey */
+  /* Border is already handled by bg-ui-bg rule above */
+}
+
+/* 6. REPORT/DELETE BUTTONS */
+html[data-theme="mono"] button[class*="bg-red"] {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid #000000 !important;
+}
+html[data-theme="mono"] button[class*="bg-red"] * {
+  color: #ffffff !important;
+}
+
+/* 7. CHAT BUBBLES */
+html[data-theme="mono"] .chat-bubble {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid #000000;
+}
+html[data-theme="mono"] .chat-bubble p {
+  color: #ffffff !important;
+}
+
+/* 8. STATS VIEWER */
+html[data-theme="mono"] .stats-viewer-card {
+  border: 2px dashed #000000 !important;
+  background-color: #ffffff !important;
+}
+html[data-theme="mono"] .stats-viewer-card header {
+  border-bottom: 1px solid #000000 !important;
+}
+html[data-theme="mono"] .stats-viewer-card header * {
+  color: #000000 !important;
+}
+html[data-theme="mono"] .stats-viewer-card * {
+  color: #000000 !important;
+}
+html[data-theme="mono"] .stats-viewer-card input {
+  border: 1px solid #000000 !important;
+}
+
+/* 9. SCROLLBAR */
+html[data-theme="mono"] .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #ffffff;
+  border: 2px solid #000000;
+}
+html[data-theme="mono"] .custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #ffffff;
+  border-left: 1px solid #000000; 
 }

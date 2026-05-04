@@ -108,3 +108,7 @@ export const getVideoDetails = (urlOrId, hostname = '') => {
     type: null 
   };
 };
+
+export function getVideoEmbedUrl(urlOrId, hostname = '') {
+  return getVideoDetails(urlOrId, hostname).embedUrl;
+}

@@ -1,179 +1,242 @@
-import React, { useState, useMemo, useEffect } from 'react';
+/**
+ * @fileoverview Modal component displaying player statistics leaderboard with search functionality.
+ * Shows ranked players for a specific list type with filtering capabilities.
+ * 
+ * @module StatsViewer
+ */
+
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { X, Search } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext.jsx';
+import { cleanUsername } from '../utils/scoring.js';
 import axios from 'axios';
 
-// Scoring formula: 100 points for #1, decaying for higher placements (worse rankings).
-const getPoints = (placement) => 100 / placement;
+/**
+ * Valid list types
+ */
+const VALID_LIST_TYPES = [
+  'main',
+  'unrated',
+  'platformer',
+  'challenge',
+  'speedhack',
+  'ddl',
+  'future',
+  '10sll',
+  'ill'
+];
 
-export default function StatsViewer({ onClose, title, listType = "main" }) {
+/**
+ * Validates list type
+ * @param {string} listType - List type to validate
+ * @returns {boolean} True if valid
+ */
+function isValidListType(listType) {
+  return typeof listType === 'string' && VALID_LIST_TYPES.includes(listType);
+}
+
+
+/**
+ * Stats viewer modal component
+ * @param {object} props - Component props
+ * @param {function} props.onClose - Callback to close modal
+ * @param {string} props.listType - Type of list to display
+ * @param {string} props.title - Modal title
+ * @returns {JSX.Element} Stats viewer JSX
+ */
+export default function StatsViewer({ onClose, listType, title }) {
   const [search, setSearch] = useState('');
-  const [completionData, setCompletionData] = useState([]);
-  const [levelData, setLevelData] = useState([]);
-  const [isLoadingCompletions, setIsLoadingCompletions] = useState(false);
-  const [isLoadingLevels, setIsLoadingLevels] = useState(false);
+  const location = useLocation();
+  const { t } = useLanguage();
+  const isMountedRef = useRef(true);
+  const searchInputRef = useRef(null);
 
-  // Fetch level data from database
-  useEffect(() => {
-    const fetchLevelData = async () => {
-      setIsLoadingLevels(true);
-      try {
-        const response = await axios.get(`/api/lists/${listType}-list`);
-        setLevelData(response.data);
-      } catch (error) {
-        console.error('Failed to fetch level data:', error);
-      } finally {
-        setIsLoadingLevels(false);
-      }
-    };
-
-    fetchLevelData();
+  // Validate and normalize list type
+  const normalizedListType = useMemo(() => {
+    return isValidListType(listType) ? listType : 'main';
   }, [listType]);
 
-  // Fetch completion data from database for the current list
+  // State for players data
+  const [players, setPlayers] = useState([]);
+  const [isLoadingPlayers, setIsLoadingPlayers] = useState(true);
+
+  // Fetch players from API (database is source of truth)
   useEffect(() => {
-    const fetchCompletionData = async () => {
-      setIsLoadingCompletions(true);
+    let isMounted = true;
+
+    async function fetchPlayers() {
+      setIsLoadingPlayers(true);
       try {
-        // Fetch all completions for the current list (public endpoint, no auth needed)
-        const response = await axios.get(`/api/completion-submissions/list-completions?list=${listType}-list`);
-        setCompletionData(response.data);
+        const response = await axios.get(`/api/stats-viewer/${normalizedListType}`);
+        if (isMounted) {
+          setPlayers(Array.isArray(response.data) ? response.data : []);
+        }
       } catch (error) {
-        console.error('Failed to fetch completion data:', error);
+        console.error('Failed to fetch stats viewer data:', error);
+        if (isMounted) {
+          setPlayers([]);
+        }
       } finally {
-        setIsLoadingCompletions(false);
+        if (isMounted) {
+          setIsLoadingPlayers(false);
+        }
       }
+    }
+
+    fetchPlayers();
+
+    return () => {
+      isMounted = false;
     };
+  }, [normalizedListType]);
 
-    fetchCompletionData();
-  }, [listType]);
+  // Filter players based on search query
+  const filteredPlayers = useMemo(() => {
+    if (!search || typeof search !== 'string') {
+      return players;
+    }
 
-  const rankedPlayers = useMemo(() => {
-    // 1. Create a map of placements to base points from the database level data
-    // Points formula: #1 (hardest) gets 100 points, #2 gets 50, #3 gets 33.33, etc.
-    const pointValues = new Map(levelData.map(level => [level.placement, getPoints(level.placement)]));
+    const searchLower = search.toLowerCase().trim();
+    if (searchLower.length === 0) {
+      return players;
+    }
 
-    // 2. Calculate verifications from database level data (verifier field)
-    // Verifications: levels where the user IS the verifier
-    const verificationsByPlayer = {};
-    levelData.forEach(level => {
-      if (level.verifier) {
-        if (!verificationsByPlayer[level.verifier]) {
-          verificationsByPlayer[level.verifier] = [];
-        }
-        verificationsByPlayer[level.verifier].push(level.placement);
+    return players.filter((player) => {
+      if (!player || typeof player !== 'object') return false;
+
+     
+      return playerName.includes(searchLower) || playerClan.includes(searchLower);
+    });
+  }, [players, search]);
+
+  // Handle search input change
+  const handleSearchChange = useCallback((e) => {
+    if (isMountedRef.current) {
+      const value = e.target.value;
+      // Limit search length to prevent performance issues
+      setSearch(value.substring(0, 100));
+    }
+  }, []);
+
+  // Handle close with cleanup
+  const handleClose = useCallback(() => {
+    if (isMountedRef.current && onClose) {
+      onClose();
+    }
+  }, [onClose]);
+
+  // Handle escape key
+  useEffect(() => {
+    function handleEscape(e) {
+      if (e.key === 'Escape' && isMountedRef.current) {
+        handleClose();
       }
-    });
+    }
 
-    // 3. Calculate completions from database completion data
-    // Completions: records where the user has a record but is NOT the verifier
-    const completionsByPlayer = {};
-    completionData.forEach(level => {
-      level.records.forEach(record => {
-        // Only count as completion if the user is NOT the verifier
-        if (record.username !== level.verifier) {
-        if (!completionsByPlayer[record.username]) {
-          completionsByPlayer[record.username] = [];
-        }
-          // Use a Set-like approach to avoid duplicates
-        if (!completionsByPlayer[record.username].includes(level.placement)) {
-          completionsByPlayer[record.username].push(level.placement);
-          }
-        }
-      });
-    });
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [handleClose]);
 
-    // 4. Get all unique players (from verifications and completions)
-    const allPlayerNames = new Set([
-      ...Object.keys(verificationsByPlayer),
-      ...Object.keys(completionsByPlayer)
-    ]);
+  // Focus search input on mount
+  useEffect(() => {
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, []);
 
-    // 5. Create player data with correct stats
-    const allPlayerData = Array.from(allPlayerNames).map(playerName => ({
-      name: playerName,
-      verifications: verificationsByPlayer[playerName] || [],
-      completions: completionsByPlayer[playerName] || []
-    }));
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
-    // 6. Calculate the total score for each player
-    // Scoring: #1 (hardest) gets most points, descending as levels get easier
-    const playersWithScores = allPlayerData.map(player => {
-      let score = 0;
-      
-      // Points for completions (records where user is NOT verifier)
-      score += player.completions.reduce((total, placement) => {
-        return total + (pointValues.get(placement) || 0);
-      }, 0);
-      
-      // Points for verifications (levels where user IS verifier)
-      score += player.verifications.reduce((total, placement) => {
-        return total + (pointValues.get(placement) || 0);
-      }, 0);
-      
-      return { ...player, score };
-    });
-
-    // 7. Sort players by score in descending order
-    playersWithScores.sort((a, b) => b.score - a.score);
-
-    // 8. Assign ranks
-    return playersWithScores.map((player, index) => ({ ...player, rank: index + 1 }));
-  }, [levelData, completionData]);
-
-  const filteredPlayers = rankedPlayers.filter(
-    (player) => player.name.toLowerCase().includes(search.toLowerCase())
-  );
 
   return (
-    <div 
-        className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4" 
-        onClick={onClose}
+    <div
+      className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"
+      onClick={handleClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="stats-viewer-title"
     >
-      <div 
-        className="bg-white dark:bg-ui-bg rounded-xl shadow-2xl w-full max-w-md flex flex-col max-h-[80vh] border border-gray-200 dark:border-accent/30" 
+      <div
+        className="stats-viewer-card bg-ui-bg rounded-xl shadow-2xl w-full max-w-md flex flex-col max-h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="p-4 border-b border-gray-200 dark:border-accent/30 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-text-primary">{title}</h2>
-          <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-accent/20 transition-colors">
-            <X className="w-6 h-6 text-gray-600 dark:text-text-secondary" />
+        {/* Header */}
+        <header className="p-4 border-b border-primary-bg flex justify-between items-center">
+          <h2 id="stats-viewer-title" className="text-xl font-bold text-text-primary">
+            {sanitizedTitle}
+          </h2>
+          <button
+            onClick={handleClose}
+            className="p-1 rounded-full text-text-primary hover:bg-primary-bg transition-colors"
+            aria-label={t('close') || 'Close'}
+          >
+            <X className="w-6 h-6" />
           </button>
         </header>
+
+        {/* Search */}
         <div className="p-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-text-secondary" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="Search Player..."
+              placeholder={t('search_player_placeholder') || 'Search players...'}
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 p-2 rounded-lg border border-gray-300 dark:border-accent/30 bg-gray-50 dark:bg-ui-bg/50 text-gray-900 dark:text-text-primary placeholder-gray-400 dark:placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-accent"
+              onChange={handleSearchChange}
+              className="w-full pl-10 p-2 rounded-lg border border-primary-bg bg-primary-bg text-text-primary"
+              aria-label={t('search_players') || 'Search players'}
             />
           </div>
         </div>
+
+        {/* Player List */}
         <ul className="flex-grow overflow-y-auto custom-scrollbar space-y-2 p-4">
-          {(isLoadingCompletions || isLoadingLevels) && (
-            <li className="text-center text-gray-500 dark:text-text-secondary py-4">
-              Loading stats data...
+          {isLoadingPlayers ? (
+            <li className="text-center text-text-muted py-8">
+              {t('loading') || 'Loading...'}
             </li>
+          ) : filteredPlayers.length === 0 ? (
+            <li className="text-center text-text-muted py-8">
+              {t('no_players_found') || 'No players found'}
+            </li>
+          ) : (
+            filteredPlayers.map((player, index) => {
+              if (!player || typeof player !== 'object') return null;
+
+              const playerRank = typeof player.demonlistRank === 'number' ? player.demonlistRank : index + 1;
+              const playerScore = typeof player.demonlistScore === 'number' ? player.demonlistScore : 0;
+
+              return (
+                <li
+                  key={`${playerName}-${index}`}
+                  className="flex items-center p-2 rounded-lg bg-primary-bg shadow-sm"
+                >
+                  <span className="font-bold text-lg text-accent w-10 text-left">
+                    #{playerRank}
+                  </span>
+                  <Link
+                    to={`/players/${normalizedListType}/${playerSlug}`}
+                    state={{ from: location.pathname, listType: normalizedListType }}
+                    className="flex-1 text-text-primary font-semibold text-left hover:underline"
+                    onClick={handleClose}
+                  >
+                    {playerName}
+                  </Link>
+                  <span className="text-text-muted font-mono text-right">
+                    {playerScore.toFixed(2)}
+                  </span>
+                </li>
+              );
+            })
           )}
-          {filteredPlayers.map((player) => (
-            <li key={player.name} className="flex items-center p-3 rounded-lg bg-gray-50 dark:bg-ui-bg/50 shadow-sm border border-gray-200 dark:border-accent/20 hover:border-indigo-400 dark:hover:border-accent/50 transition-colors">
-              <span className="font-bold text-lg text-indigo-600 dark:text-accent w-10 text-left">
-                #{player.rank}
-              </span>
-              <div className="flex-1 text-gray-900 dark:text-text-primary">
-                <div className="font-semibold text-left">{player.name}</div>
-                <div className="text-xs text-gray-500 dark:text-text-secondary flex gap-3">
-                  <span>Completions: {player.completions?.length || 0}</span>
-                  <span>Verifications: {player.verifications?.length || 0}</span>
-                </div>
-              </div>
-              <span className="text-indigo-600 dark:text-accent font-mono text-right font-semibold">
-                {player.score.toFixed(2)}
-              </span>
-            </li>
-          ))}
         </ul>
       </div>
     </div>
