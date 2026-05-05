@@ -54,20 +54,28 @@ export default function ListManager({ listToManage }) {
     };
     
     const handleMove = async (levelId, newPlacement) => {
-        // Prevent moving the top item further up
         if (newPlacement < 1) return;
-        // Prevent moving the bottom item further down
         if (newPlacement > levels.length) return;
-        
+
         try {
             await axios.put('/api/admin/move-level', 
                 { levelId, newPlacement },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            fetchLevels(); // Refresh list
+            fetchLevels();
         } catch (err) {
             alert(err.response?.data?.message || 'Failed to move level.');
         }
+    };
+
+    const applyPlacementFromInput = (levelId, currentPlacement, rawInput) => {
+        const parsed = Number.parseInt(String(rawInput).trim(), 10);
+        if (!Number.isFinite(parsed)) {
+            alert('Enter a whole number placement.');
+            return;
+        }
+        if (parsed === currentPlacement) return;
+        void handleMove(levelId, parsed);
     };
 
     return (
@@ -85,11 +93,37 @@ export default function ListManager({ listToManage }) {
             {!isLoading && !error && levels.length > 0 && (
                 <div className="space-y-2">
                     {levels.map((level) => (
-                        <div key={level.id} className="grid grid-cols-12 gap-4 items-center p-3 bg-gray-50 dark:bg-ui-bg/30 rounded-lg">
-                            <span className="font-bold text-lg text-indigo-500 dark:text-cyan-400 col-span-1">#{level.placement}</span>
-                            <span className="col-span-5 truncate text-gray-800 dark:text-text-primary">{level.name}</span>
-                            <span className="text-gray-500 dark:text-text-secondary col-span-3 truncate">by {level.creator}</span>
-                            <div className="flex justify-end items-center gap-2 col-span-3 text-gray-600 dark:text-gray-300">
+                        <div key={level.id} className="grid grid-cols-12 gap-2 sm:gap-4 items-center p-3 bg-gray-50 dark:bg-ui-bg/30 rounded-lg">
+                            <span className="font-bold text-lg text-indigo-500 dark:text-cyan-400 col-span-2 sm:col-span-1">#{level.placement}</span>
+                            <span className="col-span-10 sm:col-span-4 truncate text-gray-800 dark:text-text-primary">{level.name}</span>
+                            <span className="text-gray-500 dark:text-text-secondary col-span-12 sm:col-span-2 truncate sm:pl-0 pl-2">by {level.creator}</span>
+                            <div className="flex flex-wrap justify-end items-center gap-2 col-span-12 sm:col-span-5 text-gray-600 dark:text-gray-300">
+                                <form
+                                    className="flex items-center gap-1"
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        const fd = new FormData(e.currentTarget);
+                                        applyPlacementFromInput(level.id, level.placement, fd.get('placement'));
+                                    }}
+                                >
+                                    <label className="sr-only" htmlFor={`placement-${level.id}`}>New placement</label>
+                                    <input
+                                        id={`placement-${level.id}`}
+                                        name="placement"
+                                        type="number"
+                                        min={1}
+                                        max={levels.length}
+                                        defaultValue={level.placement}
+                                        key={`${level.id}-${level.placement}`}
+                                        className="w-16 sm:w-[4.25rem] px-2 py-1 rounded-md border bg-white dark:bg-ui-bg border-gray-300 dark:border-accent/30 text-gray-900 dark:text-white text-sm"
+                                    />
+                                    <button
+                                        type="submit"
+                                        className="px-2 py-1 text-sm rounded-md bg-indigo-600 dark:bg-accent text-white hover:opacity-90"
+                                    >
+                                        Go
+                                    </button>
+                                </form>
                                 <button 
                                     onClick={() => handleMove(level.id, level.placement - 1)} 
                                     className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full disabled:opacity-20" 

@@ -36,12 +36,6 @@ export default function InfoBox({ onClose }) {
               <li>Adding detailed statistics for every player.</li>
             </ul>
 
-            {/* New Section */}
-            <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2">List History</h3>
-            <p className="text-sm mb-4">
-              Please note: Automated position history tracking for all lists began on <strong>October 4, 2025</strong>. Changes made before this date are not reflected in a level's position history.
-            </p>
-
             <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2">Public API</h3>
             <p className="text-sm mb-4">
               <span className="text-cyan-600 dark:text-cyan-400 font-semibold">The FLL</span> API is a free and open resource for the community. You can use the following endpoints to pull data directly from the database.

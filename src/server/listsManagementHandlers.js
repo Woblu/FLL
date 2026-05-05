@@ -14,15 +14,6 @@ export async function addLevelToList(req, res) {
       const dataToCreate = { ...levelData, levelId: parseInt(levelData.levelId, 10), placement: parseInt(placement, 10), list };
       const createdLevel = await tx.level.create({ data: dataToCreate });
 
-      await tx.listChange.create({
-        data: {
-          type: 'ADD',
-          description: `${createdLevel.name} added to the ${list} at #${placement}`,
-          list: list,
-          level: { connect: { id: createdLevel.id } },
-        },
-      });
-
       const limit = list === 'main-list' ? 150 : 75;
       await tx.level.deleteMany({ where: { list, placement: { gt: limit } } });
       return createdLevel;
@@ -41,15 +32,6 @@ export async function removeLevelFromList(req, res) {
     const result = await prisma.$transaction(async (tx) => {
       const levelToRemove = await tx.level.findUnique({ where: { id: levelId } });
       if (!levelToRemove) throw new Error('Level not found.');
-
-      await tx.listChange.create({
-        data: {
-          type: 'REMOVE',
-          description: `${levelToRemove.name} removed from ${levelToRemove.list} (was #${levelToRemove.placement})`,
-          list: levelToRemove.list,
-          level: { connect: { id: levelToRemove.id } },
-        },
-      });
 
       // --- THIS IS THE FIX ---
       // Delete all records associated with this level first
@@ -79,6 +61,11 @@ export async function moveLevelInList(req, res) {
       const oldPlacement = levelToMove.placement;
       const { list } = levelToMove;
 
+      const listCount = await tx.level.count({ where: { list } });
+      if (newPlacement < 1 || newPlacement > listCount) {
+        throw new Error(`Placement must be between 1 and ${listCount}.`);
+      }
+
       if (oldPlacement !== newPlacement) {
         if (oldPlacement > newPlacement) {
           await tx.level.updateMany({ where: { list, placement: { gte: newPlacement, lt: oldPlacement } }, data: { placement: { increment: 1 } } });
@@ -88,17 +75,6 @@ export async function moveLevelInList(req, res) {
       }
       
       const finalUpdatedLevel = await tx.level.update({ where: { id: levelId }, data: { placement: newPlacement } });
-
-      if (oldPlacement !== newPlacement) {
-        await tx.listChange.create({
-          data: {
-            type: 'MOVE',
-            description: `${finalUpdatedLevel.name} moved from #${oldPlacement} to #${newPlacement}`,
-            list: list,
-            level: { connect: { id: finalUpdatedLevel.id } },
-          },
-        });
-      }
 
       const limit = list === 'main-list' ? 150 : 75;
       await tx.level.deleteMany({ where: { list, placement: { gt: limit } } });
@@ -131,69 +107,6 @@ export async function updateLevel(req, res) {
   } catch (error) {
     console.error("Failed to update level:", error);
     return res.status(500).json({ message: 'Failed to update level.' });
-  }
-}
-
-export async function getLevelHistory(req, res, levelId) {
-    if (!levelId) { return res.status(400).json({ message: 'Level ID is required.' }); }
-    try {
-        const history = await prisma.listChange.findMany({
-            where: { levelId: levelId },
-            orderBy: { createdAt: 'desc' },
-        });
-        return res.status(200).json(history);
-    } catch (error) {
-        console.error("Failed to fetch level history:", error);
-        return res.status(500).json({ message: 'Failed to fetch level history.' });
-    }
-}
-
-export async function getHistoricList(req, res) {
-  const { date } = req.query;
-  if (!date) {
-    return res.status(400).json({ message: 'A date parameter is required.' });
-  }
-  try {
-    const targetDate = new Date(date);
-    const currentLevels = await prisma.level.findMany({ where: { list: 'main-list' } });
-    const levelsMap = new Map(currentLevels.map(level => [level.id, { ...level }]));
-    const changesToUndo = await prisma.listChange.findMany({
-      where: { list: 'main-list', createdAt: { gt: targetDate } },
-      orderBy: { createdAt: 'desc' },
-    });
-    for (const change of changesToUndo) {
-      if (change.type === 'ADD') {
-        levelsMap.delete(change.levelId);
-      } 
-      else if (change.type === 'MOVE') {
-        const match = change.description.match(/moved from #(\d+) to #(\d+)/);
-        if (match) {
-          const oldPlacement = parseInt(match[1]);
-          const levelToRevert = levelsMap.get(change.levelId);
-          if (levelToRevert) { levelToRevert.placement = oldPlacement; }
-        }
-      } 
-      else if (change.type === 'REMOVE') {
-        const match = change.description.match(/(.+) removed from .+ \(was #(\d+)\)/);
-        if (match) {
-          const [, levelName, oldPlacementStr] = match;
-          levelsMap.set(change.levelId, {
-            id: change.levelId,
-            name: levelName,
-            placement: parseInt(oldPlacementStr),
-            creator: 'N/A (Historic)',
-            verifier: 'N/A',
-            list: 'main-list',
-          });
-        }
-      }
-    }
-    let finalHistoricList = Array.from(levelsMap.values()).sort((a, b) => a.placement - b.placement);
-    finalHistoricList.forEach((level, index) => { level.placement = index + 1; });
-    return res.status(200).json(finalHistoricList);
-  } catch (error) {
-    console.error("Failed to get historic list:", error);
-    return res.status(500).json({ message: 'Failed to retrieve historic list data.' });
   }
 }
 
@@ -232,16 +145,6 @@ export async function moveAllLevelsBetweenLists(req, res) {
           data: {
             list: toList,
             placement: newPlacement,
-          },
-        });
-
-        // Log the move in listChange
-        await tx.listChange.create({
-          data: {
-            type: 'MOVE',
-            description: `${level.name} moved from ${fromList} (#${level.placement}) to ${toList} (#${newPlacement})`,
-            list: toList,
-            level: { connect: { id: level.id } },
           },
         });
       }

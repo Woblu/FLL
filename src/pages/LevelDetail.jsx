@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
-import { ChevronLeft, Trash2, ChevronDown, ChevronUp, PlusCircle } from 'lucide-react'; //
+import { ChevronLeft, Trash2, PlusCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -16,8 +16,6 @@ export default function LevelDetail() {
   const { user, token } = useAuth();
   
   const [level, setLevel] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -30,11 +28,10 @@ export default function LevelDetail() {
   /** Full level art from AREDL Thumbnails repo (Geode pipeline); HDL only */
   const [hdlBgOk, setHdlBgOk] = useState(null);
 
-  const fetchLevelAndHistory = async () => {
+  const fetchLevel = async () => {
     // Only show loading spinner on the first load, not during refreshes
     if (!level) setIsLoading(true); 
     setError(null);
-    setHistory([]);
     try {
       const levelResponse = await axios.get(`/api/level/${levelId}?list=${listType}-list`);
       setLevel(levelResponse.data);
@@ -42,12 +39,6 @@ export default function LevelDetail() {
       if (levelResponse.data?.videoId) {
         const details = getVideoDetails(levelResponse.data.videoId, window.location.hostname);
         setEmbedInfo(details);
-      }
-      if (token && levelResponse.data?.id) {
-        const historyResponse = await axios.get(`/api/levels/${levelResponse.data.id}/history`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setHistory(historyResponse.data);
       }
     } catch (err) {
       console.error("Failed to fetch level details:", err);
@@ -60,8 +51,8 @@ export default function LevelDetail() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchLevelAndHistory();
-  }, [levelId, listType, token]);
+    fetchLevel();
+  }, [levelId, listType]);
 
   useEffect(() => {
     if (listType !== 'hdl' || level?.levelId == null) {
@@ -133,7 +124,7 @@ export default function LevelDetail() {
         { levelId: level.id, recordVideoId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      fetchLevelAndHistory(); 
+      fetchLevel(); 
     } catch (err) {
       alert(`Failed to remove record: ${err.response?.data?.message || 'Server error'}`);
     }
@@ -219,9 +210,9 @@ export default function LevelDetail() {
                   </p>
                   <p>
                     <span className="font-bold text-gray-800 dark:text-white">Enjoyment (EDEL):</span>{' '}
-                    {aredl.data.edel_enjoyment != null ? (
+                    {aredl.data.edel_enjoyment != null && Number.isFinite(Number(aredl.data.edel_enjoyment)) ? (
                       <>
-                        {aredl.data.edel_enjoyment}
+                        {Math.ceil(Number(aredl.data.edel_enjoyment))}/100
                         {aredl.data.is_edel_pending ? (
                           <span className="text-sm text-gray-500 dark:text-text-muted"> (pending)</span>
                         ) : null}
@@ -282,31 +273,6 @@ export default function LevelDetail() {
             </div>
           )}
         </div>
-
-        {/* --- HISTORY SECTION --- */}
-        {history.length > 0 && (
-          <div className="bg-white dark:bg-ui-bg/60 border border-gray-200 dark:border-accent/30 backdrop-blur-sm rounded-lg shadow-inner">
-            <button 
-              onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-              className="w-full flex justify-between items-center p-4 text-xl font-bold text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-accent/20 transition-colors"
-            >
-              <span>Position History</span>
-              {isHistoryOpen ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
-            </button>
-            {isHistoryOpen && (
-              <div className="p-4 border-t border-gray-200 dark:border-accent/50">
-                <ul className="space-y-2">
-                  {history.map(change => (
-                    <li key={change.id} className="text-gray-700 dark:text-gray-300 flex justify-between items-center text-sm">
-                      <span>{change.description}</span>
-                      <span className="text-gray-500 dark:text-gray-400">{new Date(change.createdAt).toLocaleString()}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* --- RECORDS SECTION --- */}
         <div className="bg-white dark:bg-ui-bg/60 border border-gray-200 dark:border-accent/30 backdrop-blur-sm p-6 rounded-lg shadow-inner">
@@ -370,7 +336,7 @@ export default function LevelDetail() {
           levelId={level.id}
           onClose={() => setIsModalOpen(false)}
           onRecordAdded={() => {
-            fetchLevelAndHistory(); 
+            fetchLevel(); 
           }}
         />
       )}

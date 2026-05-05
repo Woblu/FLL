@@ -64,9 +64,6 @@ export default async function handler(req, res) {
     const levels = await prisma.level.findMany({ where: { list: listType }, orderBy: { placement: 'asc' } });
     return res.status(200).json(levels);
   }
-  else if (path === '/api/lists/main-list/history' && req.method === 'GET') {
-    return listManagementHandlers.getHistoricList(req, res);
-  }
   else if (path === '/api/completion-submissions/list-completions' && req.method === 'GET') {
     return completionHandlers.listAllCompletionsForList(req, res);
   }
@@ -173,10 +170,6 @@ export default async function handler(req, res) {
     } 
     else if (path === '/api/chat/post' && req.method === 'POST') {
       return chatHandlers.postMessage(req, res, decodedToken);
-    }
-    else if (path.match(/^\/api\/levels\/[a-zA-Z0-9]+\/history$/) && req.method === 'GET') {
-        const levelId = path.split('/')[3];
-        return listManagementHandlers.getLevelHistory(req, res, levelId);
     }
     else if (path.startsWith('/api/admin/')) {
       if (!['ADMIN', 'MODERATOR'].includes(decodedToken.role)) {

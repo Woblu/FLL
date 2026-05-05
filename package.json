@@ -8,7 +8,8 @@
     "build": "prisma generate && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "seed": "dotenv -e .env -- node seed.js"
+    "seed": "dotenv -e .env -- node seed.js",
+    "clear-list-changes": "dotenv -e .env -- node scripts/clear-list-changes.js"
   },
   "dependencies": {
     "@prisma/client": "^5.14.0",

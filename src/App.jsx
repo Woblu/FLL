@@ -51,6 +51,15 @@ const AppLayout = ({ children }) => {
     // 'relative' anchors absolute atmosphere + side decorations to this column
     <div className="relative min-h-screen text-text-primary flex flex-col overflow-x-hidden">
       {!isLevelDetailPage && <ListPagesAtmosphere />}
+      {/*
+        Match list/home edge tones behind the semi-transparent side art: full atmosphere is omitted
+        on level detail so the HDL backdrop stays clean; vignette-only keeps strip perceived opacity aligned.
+      */}
+      {isLevelDetailPage && (
+        <div className="pointer-events-none absolute inset-0 z-[10] overflow-hidden" aria-hidden>
+          <div className="list-pages-atmosphere-vignette absolute inset-0" />
+        </div>
+      )}
 
       {/* LEFT SIDE DECORATION - z-50 */}
       <div
