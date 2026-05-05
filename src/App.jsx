@@ -29,6 +29,7 @@ const PersonalRecordDetail = lazy(() => import("./pages/PersonalRecordDetail"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const CreateLayoutPage = lazy(() => import("./pages/layouts/CreateLayoutPage"));
 const LayoutDetailPage = lazy(() => import("./pages/layouts/LayoutDetailPage"));
+const SubmitLevelPage = lazy(() => import("./pages/SubmitLevelPage"));
 
 const RouteFallback = () => <LoadingSpinner message="Loading..." />;
 
@@ -107,6 +108,15 @@ export default function App() {
             {/* Redirect root to main list */}
             <Route path="/" element={<Home />} />
             <Route path="/fll" element={<Navigate to="/" replace />} />
+
+            <Route
+              path="/submit/:listType"
+              element={
+                <ProtectedRoute>
+                  <SubmitLevelPage />
+                </ProtectedRoute>
+              }
+            />
 
           {/* 404 - before /:listType so "404" is not treated as listType */}
           

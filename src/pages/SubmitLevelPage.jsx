@@ -1,13 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import { UploadCloud, Image as ImageIcon, Loader2, CheckCircle, X } from 'lucide-react';
+import { LIST_BY_ID } from '../config/lists.js';
 
 export default function SubmitLevelPage() {
   const { listType } = useParams();
   const { user, token } = useAuth();
-  const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
   const [levelName, setLevelName] = useState('');
@@ -90,6 +90,10 @@ export default function SubmitLevelPage() {
       setIsLoading(false);
     }
   };
+
+  if (!LIST_BY_ID[listType]) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-4 md:p-8">

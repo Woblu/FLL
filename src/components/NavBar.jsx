@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
-import { BarChart2, LogIn, UserPlus, Menu, X } from 'lucide-react';
+import { BarChart2, LogIn, UserPlus, Menu, X, Upload } from 'lucide-react';
 import logo from '../assets/dashrank-logo.webp';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useLanguage } from '../contexts/LanguageContext.jsx';
@@ -200,6 +200,20 @@ export default function NavBar() {
                   {tab.name}
                 </NavLink>
               ))}
+              {user && (
+                <NavLink
+                  to={`/submit/${listType}`}
+                  className={({ isActive }) =>
+                    `px-3 py-2 rounded-md font-semibold transition-colors text-sm whitespace-nowrap flex items-center gap-2 ${
+                      isActive ? 'bg-accent text-text-on-ui' : 'text-accent hover:bg-accent/20'
+                    }`
+                  }
+                >
+                  <Upload className="w-4 h-4" />
+                  <span className="hidden lg:inline">Submit {listType.toUpperCase()} level</span>
+                  <span className="lg:hidden">Submit</span>
+                </NavLink>
+              )}
             </div>
           </nav>
 
@@ -253,6 +267,20 @@ export default function NavBar() {
                     {tab.name}
                   </NavLink>
                 ))}
+                {user && (
+                  <NavLink
+                    to={`/submit/${listType}`}
+                    onClick={handleMobileNavClick}
+                    className={({ isActive }) =>
+                      `block px-3 py-2 rounded-md font-semibold transition-colors text-sm flex items-center gap-2 ${
+                        isActive ? 'bg-accent text-text-on-ui' : 'text-accent hover:bg-accent/20'
+                      }`
+                    }
+                  >
+                    <Upload className="w-4 h-4" />
+                    Submit {listType.toUpperCase()} level
+                  </NavLink>
+                )}
               </div>
             </div>
           </div>
