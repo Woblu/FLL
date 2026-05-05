@@ -11,7 +11,7 @@ try {
   console.log(`Deleted ${result.count} list change record(s).`);
 } catch (e) {
   console.error(e);
-  process.exitCode = 1;
+
 } finally {
   await prisma.$disconnect();
 }

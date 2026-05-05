@@ -47,6 +47,7 @@ export default function NavBar() {
     challenge: t('challenge_stats_viewer'),
     speedhack: t('speedhack_stats_viewer'),
     ddl: t('ddl_stats_viewer'),
+    hdl: t('hdl_stats_viewer') || 'HDL Stats Viewer',
     future: t('future_stats_viewer'),
     '10sll': t('ten_second_levels_stats_viewer'),
     ill: t('impossible_levels_stats_viewer')
