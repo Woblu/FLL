@@ -1,7 +1,7 @@
 /**
  * Background layers for list and landing pages (Demonlist-style depth behind side art):
  * base fill, soft glows, masked grid, subtle noise, vignette. Absolute inside a relative
- * parent so it scrolls with the page (including footer when footer is inside the same column).
+ * parent so it scrolls with the page.
  * Pointer-events none.
  *
  * @module ListPagesAtmosphere

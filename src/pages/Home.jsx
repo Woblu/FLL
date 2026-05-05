@@ -8,9 +8,16 @@ import { History, X } from 'lucide-react';
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const listTitles = {
-  main: "Main List", unrated: "Unrated List", platformer: "Platformer List",
-  speedhack: "Speedhack List", future: "Future List", challenge: "Challenge List",
-  scl: "SCL", ddl: "DDL", hdl: "HDL (Hardest Demons List)"
+  main: "FLL List",
+  fll: "FLL List",
+  unrated: "Unrated List",
+  platformer: "Platformer List",
+  speedhack: "Speedhack List",
+  future: "Future List",
+  challenge: "Challenge List",
+  scl: "SCL",
+  ddl: "DDL",
+  hdl: "HDL (Hardest Demons List)",
 };
 
 const HistoryModal = ({ onClose, onFetchHistory }) => {
@@ -151,7 +158,7 @@ export default function Home() {
             onChange={(e) => setSearch(e.target.value)}
             className="flex-grow p-3 rounded-lg border bg-gray-50 dark:bg-ui-bg/50 border-gray-300 dark:border-accent/30 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-accent"
           />
-          {currentListType === 'main' && (
+          {(currentListType === 'main' || currentListType === 'fll') && (
             <button onClick={() => setIsHistoryModalOpen(true)} title="View List History" className="p-3 rounded-lg border bg-white dark:bg-ui-bg/50 border-gray-300 dark:border-accent/30 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-accent/30 transition-colors">
                 <History className="w-5 h-5"/>
             </button>

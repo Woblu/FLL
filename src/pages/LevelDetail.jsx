@@ -7,6 +7,7 @@ import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { getVideoDetails } from '../utils/videoUtils.js';
 import AddRecordModal from '../components/AddRecordModal.jsx';
+import { aredlLevelFullImageUrl } from '../utils/aredlAssets.js';
 
 export default function LevelDetail() {
   const { listType, levelId } = useParams();
@@ -23,6 +24,11 @@ export default function LevelDetail() {
   const [isCopied, setIsCopied] = useState(false);
   const [embedInfo, setEmbedInfo] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  /** AREDL (api.aredl.net): placement + EDEL enjoyment; only used on HDL */
+  const [aredl, setAredl] = useState({ loading: false, data: undefined, error: false });
+  /** Full level art from AREDL Thumbnails repo (Geode pipeline); HDL only */
+  const [hdlBgOk, setHdlBgOk] = useState(null);
 
   const fetchLevelAndHistory = async () => {
     // Only show loading spinner on the first load, not during refreshes
@@ -56,6 +62,54 @@ export default function LevelDetail() {
     window.scrollTo(0, 0);
     fetchLevelAndHistory();
   }, [levelId, listType, token]);
+
+  useEffect(() => {
+    if (listType !== 'hdl' || level?.levelId == null) {
+      setAredl({ loading: false, data: undefined, error: false });
+      return;
+    }
+    const gdId = Number(level.levelId);
+    if (Number.isNaN(gdId)) {
+      setAredl({ loading: false, data: undefined, error: true });
+      return;
+    }
+    let cancelled = false;
+    setAredl({ loading: true, data: undefined, error: false });
+    axios
+      .get('https://api.aredl.net/v2/api/aredl/levels', { params: { level_id: gdId } })
+      .then((res) => {
+        const rows = Array.isArray(res.data) ? res.data : [];
+        const row = rows.find((r) => Number(r.level_id) === gdId) ?? null;
+        if (!cancelled) setAredl({ loading: false, data: row, error: false });
+      })
+      .catch(() => {
+        if (!cancelled) setAredl({ loading: false, data: undefined, error: true });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [listType, level?.levelId]);
+
+  useEffect(() => {
+    if (listType !== 'hdl' || level?.levelId == null) {
+      setHdlBgOk(null);
+      return;
+    }
+    const url = aredlLevelFullImageUrl(level.levelId);
+    const img = new Image();
+    let cancelled = false;
+    setHdlBgOk(null);
+    img.onload = () => {
+      if (!cancelled) setHdlBgOk(true);
+    };
+    img.onerror = () => {
+      if (!cancelled) setHdlBgOk(false);
+    };
+    img.src = url;
+    return () => {
+      cancelled = true;
+    };
+  }, [listType, level?.levelId]);
 
   const handleCopyClick = () => {
     if (level?.levelId) {
@@ -101,9 +155,26 @@ export default function LevelDetail() {
   const verifierLabel = level.list === 'future-list' ? 'Verification Status:' : 'Verified by:';
   const recordVerifierLabel = level.list === 'future-list' ? '(Status)' : '(Verifier)';
 
+  const showHdlBackdrop = listType === 'hdl' && hdlBgOk === true && level.levelId;
+
   return (
     <>
-      <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
+      {showHdlBackdrop && (
+        <>
+          <div
+            aria-hidden
+            className="fixed inset-0 z-[18] pointer-events-none bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${aredlLevelFullImageUrl(level.levelId)})` }}
+          />
+          <div
+            aria-hidden
+            className="fixed inset-0 z-[19] pointer-events-none bg-primary-bg/78 dark:bg-black/72"
+          />
+        </>
+      )}
+      <div
+        className={`max-w-4xl mx-auto p-4 sm:p-6 space-y-6 ${showHdlBackdrop ? 'relative z-[22]' : ''}`}
+      >
         {/* --- LEVEL CARD HEADER --- */}
         <div className="relative bg-white dark:bg-ui-bg/70 border-2 border-gray-200 dark:border-accent/30 backdrop-blur-sm p-4 sm:p-6 rounded-xl shadow-2xl">
           <button 
@@ -121,12 +192,51 @@ export default function LevelDetail() {
           </div>
 
           <div className="flex flex-wrap justify-center text-center mb-4 gap-x-8 gap-y-2 text-lg text-gray-600 dark:text-text-secondary">
-            <p><span className="font-bold text-gray-800 dark:text-white">Published by:</span> {level.creator}</p>
+            {listType !== 'hdl' && (
+              <p>
+                <span className="font-bold text-gray-800 dark:text-white">Published by:</span> {level.creator}
+              </p>
+            )}
             <p><span className="font-bold text-gray-800 dark:text-white">{verifierLabel}</span> {level.verifier}</p>
             {level.attempts && (
               <p><span className="font-bold text-gray-800 dark:text-white">Attempts:</span> {level.attempts.toLocaleString()}</p>
             )}
           </div>
+
+          {listType === 'hdl' && (
+            <div className="w-full border-t border-gray-200 dark:border-accent/20 mt-4 pt-4 text-center">
+              {aredl.loading && (
+                <p className="text-sm text-gray-500 dark:text-text-muted">Loading AREDL stats…</p>
+              )}
+              {aredl.error && (
+                <p className="text-sm text-red-600 dark:text-red-400">Could not load AREDL data.</p>
+              )}
+              {!aredl.loading && !aredl.error && aredl.data && (
+                <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-lg text-gray-600 dark:text-text-secondary">
+                  <p>
+                    <span className="font-bold text-gray-800 dark:text-white">AREDL placement:</span>{' '}
+                    #{aredl.data.position}
+                  </p>
+                  <p>
+                    <span className="font-bold text-gray-800 dark:text-white">Enjoyment (EDEL):</span>{' '}
+                    {aredl.data.edel_enjoyment != null ? (
+                      <>
+                        {aredl.data.edel_enjoyment}
+                        {aredl.data.is_edel_pending ? (
+                          <span className="text-sm text-gray-500 dark:text-text-muted"> (pending)</span>
+                        ) : null}
+                      </>
+                    ) : (
+                      '—'
+                    )}
+                  </p>
+                </div>
+              )}
+              {!aredl.loading && !aredl.error && aredl.data === null && (
+                <p className="text-sm text-gray-500 dark:text-text-muted">Not listed on AREDL.</p>
+              )}
+            </div>
+          )}
           
           {level.levelId && (
             <div className="text-center mb-6">

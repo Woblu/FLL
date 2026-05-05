@@ -10,7 +10,14 @@ import futureList from '../data/future-list.json';
 import mainStats from '../data/main-statsviewer.json';
 
 const allLists = { main: mainList, unrated: unratedList, platformer: platformerList, challenge: challengeList, future: futureList };
-const listTitles = { main: "Main List", unrated: "Unrated List", platformer: "Platformer List", challenge: "Challenge List", future: "Future List" };
+const listTitles = {
+  main: "FLL List",
+  fll: "FLL List",
+  unrated: "Unrated List",
+  platformer: "Platformer List",
+  challenge: "Challenge List",
+  future: "Future List",
+};
 
 export default function PlayerProfile() {
   const { playerName } = useParams();

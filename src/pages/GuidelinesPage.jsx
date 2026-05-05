@@ -6,10 +6,10 @@ export default function GuidelinesPage() {
     <div className="max-w-4xl mx-auto p-4 md:p-8 text-white">
       <div className="text-center mb-12">
         <h1 className="text-4xl md:text-5xl font-bold text-cyan-400 mb-4">
-          DashRank Benchmark List – Official Guidelines
+          The FLL Benchmark List – Official Guidelines
         </h1>
         <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-          These guidelines establish the standards for submitting performance records and adding new challenges to the DashRank Benchmark List. The goal is to promote fairness, legitimacy, and consistency across all ranked entries.
+          These guidelines establish the standards for submitting performance records and adding new challenges to The FLL Benchmark List. The goal is to promote fairness, legitimacy, and consistency across all ranked entries.
         </p>
       </div>
 
@@ -20,10 +20,10 @@ export default function GuidelinesPage() {
         <h2 className="text-3xl font-bold text-white mb-6 border-b border-gray-700 pb-2">Relationship to Community Lists</h2>
         <div className="space-y-4 text-gray-300">
           <p>
-            <strong>DashRank is an independent project and is not affiliated with Pointercrate.</strong> While our rules are comprehensive, the <a href="https://www.pointercrate.com/guidelines/index" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Pointercrate guidelines</a> serve as the foundational standard for the community. In any situation not explicitly covered by our rules, their guidelines should be considered the default reference.
+            <strong>The FLL is an independent project and is not affiliated with Pointercrate.</strong> While our rules are comprehensive, the <a href="https://www.pointercrate.com/guidelines/index" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Pointercrate guidelines</a> serve as the foundational standard for the community. In any situation not explicitly covered by our rules, their guidelines should be considered the default reference.
           </p>
           <p>
-            Furthermore, for specific categories of challenges, DashRank recognizes the authority and specialized rulesets of other established community lists. Submissions to these categories must adhere to the guidelines of the respective list:
+            Furthermore, for specific categories of challenges, The FLL recognizes the authority and specialized rulesets of other established community lists. Submissions to these categories must adhere to the guidelines of the respective list:
           </p>
           <ul className="list-disc list-inside space-y-2 pl-4">
             <li>
@@ -72,7 +72,7 @@ export default function GuidelinesPage() {
         <section>
           <h2 className="text-3xl font-bold text-white mb-6 border-b border-gray-700 pb-2">2. Challenge Eligibility & Placement</h2>
           <p className="text-gray-400 mb-8">
-            Before a new challenge can be added to the list, it must meet the following standards as reviewed by the DashRank team.
+            Before a new challenge can be added to the list, it must meet the following standards as reviewed by The FLL team.
           </p>
           <ul className="list-disc list-inside space-y-3 text-gray-300">
             <li><strong>Appropriate Difficulty & Length:</strong> The challenge must be clearly difficult enough to justify being ranked. Very short or overly simple challenges will not be accepted.</li>
@@ -109,12 +109,12 @@ export default function GuidelinesPage() {
         <section>
           <h2 className="text-3xl font-bold text-white mb-6 border-b border-gray-700 pb-2">4. Integrity and Rule Enforcement</h2>
            <p className="text-gray-400 mb-8">
-            Maintaining the credibility of the DashRank list is a top priority. Any violation of the rules will be dealt with strictly.
+            Maintaining the credibility of The FLL list is a top priority. Any violation of the rules will be dealt with strictly.
           </p>
           <ul className="list-disc list-inside space-y-3 text-gray-300">
             <li><strong>What Counts as a Violation:</strong> This includes but isn’t limited to spliced videos, using automation tools, tampering with game mechanics, or submitting dishonest runs.</li>
             <li><strong>Penalties:</strong> If a user is caught submitting a fake or manipulated record, they will be permanently banned from submitting in the future. All of their previous records will be removed from the list.</li>
-            <li><strong>Appeals:</strong> Banned users may file a single appeal. A supermajority vote from the DashRank Review Team is required to overturn a ban.</li>
+            <li><strong>Appeals:</strong> Banned users may file a single appeal. A supermajority vote from The FLL Review Team is required to overturn a ban.</li>
           </ul>
         </section>
       </div>

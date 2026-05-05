@@ -5,7 +5,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://www.fll-list.vercel.app',
+        // Use the single-level *.vercel.app host; www.fll-list.vercel.app is not on the cert (nested subdomain).
+        target: 'https://fll-list.vercel.app',
         changeOrigin: true,
       },
     },

@@ -14,7 +14,6 @@ import PlayerList from "./components/PlayerList";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./components/RegisterPage";
 import NavBar from "./components/NavBar";
-import Footer from "./components/Footer";
 import sideDeco from "./assets/c9b562fc33dfe9e93230abab38e1ef32.webp";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
@@ -48,13 +47,13 @@ const AppLayout = ({ children }) => {
   const isLevelDetailPage = location.pathname.startsWith('/level/');
 
   return (
-    // 'relative' anchors absolute atmosphere + side decorations to this column (not the footer)
+    // 'relative' anchors absolute atmosphere + side decorations to this column
     <div className="relative min-h-screen text-text-primary flex flex-col overflow-x-hidden">
       {!isLevelDetailPage && <ListPagesAtmosphere />}
 
       {/* LEFT SIDE DECORATION - z-50 */}
       <div
-        className="hidden lg:block absolute left-0 top-0 bottom-0 w-32 xl:w-48 opacity-20 z-50 pointer-events-none"
+        className="hidden lg:block absolute left-0 top-0 bottom-0 w-32 xl:w-48 opacity-[0.38] z-50 pointer-events-none"
         style={{ 
             backgroundImage: `url(${sideDeco})`, 
             backgroundRepeat: "repeat-y", 
@@ -68,11 +67,9 @@ const AppLayout = ({ children }) => {
         {children}
       </main>
 
-      <Footer />
-
       {/* RIGHT SIDE DECORATION - z-50 */}
       <div
-        className="hidden lg:block absolute right-0 top-0 bottom-0 w-32 xl:w-48 opacity-20 z-50 pointer-events-none"
+        className="hidden lg:block absolute right-0 top-0 bottom-0 w-32 xl:w-48 opacity-[0.38] z-50 pointer-events-none"
         style={{ 
             backgroundImage: `url(${sideDeco})`, 
             backgroundRepeat: "repeat-y", 
@@ -88,7 +85,7 @@ const AppLayout = ({ children }) => {
 /**
  * Main application component
  * Defines all application routes and their corresponding components
- * NavBar on all pages; Footer inside AppLayout on list/app routes (with atmosphere)
+ * NavBar on all pages; main content in AppLayout (with atmosphere on list-style routes)
  * * @returns {JSX.Element} Application JSX
  */
 export default function App() {
@@ -109,6 +106,7 @@ export default function App() {
           <Routes>
             {/* Redirect root to main list */}
             <Route path="/" element={<Home />} />
+            <Route path="/fll" element={<Navigate to="/" replace />} />
 
           {/* 404 - before /:listType so "404" is not treated as listType */}
           

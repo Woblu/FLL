@@ -24,9 +24,9 @@ export default function InfoBox({ onClose }) {
         
         <div className="p-6 overflow-y-auto custom-scrollbar" style={{ maxHeight: 'calc(100vh - 120px)' }}>
           <div className="text-gray-700 dark:text-gray-300">
-            <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2">About DashRank</h3>
+            <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2">About The FLL</h3>
             <p className="text-sm mb-4">
-              <span className="text-cyan-600 dark:text-cyan-400 font-semibold">DashRank</span> is the ultimate Geometry Dash demonlist — a community-driven hub that combines multiple demonlists into one powerful and easy-to-use platform. Instead of bouncing between different sites, DashRank brings everything together in one place with a clean interface and fast navigation.
+              <span className="text-cyan-600 dark:text-cyan-400 font-semibold">The FLL</span> is the ultimate Geometry Dash demonlist — a community-driven hub that combines multiple demonlists into one powerful and easy-to-use platform. Instead of bouncing between different sites, The FLL brings everything together in one place with a clean interface and fast navigation.
             </p>
 
             <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2">Future Plans</h3>
@@ -44,7 +44,7 @@ export default function InfoBox({ onClose }) {
 
             <h3 className="font-bold text-xl text-gray-800 dark:text-gray-100 mb-2">Public API</h3>
             <p className="text-sm mb-4">
-              The <span className="text-cyan-600 dark:text-cyan-400 font-semibold">DashRank</span> API is a free and open resource for the community. You can use the following endpoints to pull data directly from the database.
+              <span className="text-cyan-600 dark:text-cyan-400 font-semibold">The FLL</span> API is a free and open resource for the community. You can use the following endpoints to pull data directly from the database.
             </p>
             <div className="space-y-4">
               <div>

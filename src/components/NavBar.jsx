@@ -35,12 +35,13 @@ export default function NavBar() {
   // Initialize list type from localStorage or default to 'main'
   const [listType, setListType] = useState(() => {
     const stored = localStorage.getItem('lastViewedList');
-    return stored && isStatsViewerListType(stored) ? stored : 'main';
+    return stored && isStatsViewerListType(stored) ? stored : 'fll';
   });
 
   // Memoize stats button titles
   const statsButtonTitles = useMemo(() => ({
     main: t('main_stats_viewer'),
+    fll: t('main_stats_viewer'),
     unrated: t('unrated_stats_viewer'),
     platformer: t('platformer_stats_viewer'),
     challenge: t('challenge_stats_viewer'),
@@ -59,7 +60,8 @@ export default function NavBar() {
 
     const listTabs = ordered.map((id) => {
       const l = LIST_BY_ID[id];
-      return { name: t(l.navLabelKey) || l.pageTitle, path: `/${l.id}` };
+      const path = id === 'fll' ? '/' : `/${l.id}`;
+      return { name: t(l.navLabelKey) || l.pageTitle, path, end: path === '/' };
     });
 
     return listTabs;
@@ -69,7 +71,10 @@ export default function NavBar() {
   useEffect(() => {
     if (!isMountedRef.current) return;
 
-    const currentPathSegment = location.pathname.split('/')[1] || 'main';
+    const onFllHome = location.pathname === '/' || location.pathname === '';
+    const currentPathSegment = onFllHome
+      ? 'fll'
+      : (location.pathname.split('/')[1] || 'main');
     if (isStatsViewerListType(currentPathSegment)) {
       setListType(currentPathSegment);
       localStorage.setItem('lastViewedList', currentPathSegment);
@@ -154,36 +159,37 @@ export default function NavBar() {
   }, []);
 
   // Get current stats title
-  const currentStatsTitle = statsButtonTitles[listType] || statsButtonTitles.main;
+  const currentStatsTitle = statsButtonTitles[listType] || statsButtonTitles.fll;
 
   return (
     <>
       <header className="relative bg-header-bg shadow-lg z-[60] border-b border-primary-bg sticky top-0 overflow-x-clip">
-        <div className="flex flex-row items-center justify-between px-4 py-2.5">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-4 py-2.5">
           {/* Logo */}
-          <div className="flex justify-start flex-shrink-0 mr-4">
+          <div className="flex justify-start min-w-0">
             <Link to="/" className="flex items-center gap-2 group">
               <div className="relative h-12 w-28 shrink-0 overflow-visible">
                 <img
                   src={logo}
-                  alt="DashRank Logo"
+                  alt="The FLL"
                   className="absolute left-0 top-1/2 h-24 w-auto max-w-none -translate-y-1/2 object-contain object-left transition-transform duration-200 group-hover:scale-105 origin-left"
                 />
               </div>
               <span className="block font-bold text-xl text-accent leading-tight tracking-tight group-hover:drop-shadow-[0_0_12px_rgba(34,211,238,0.7)] transition-shadow">
-                DashRank
+                The FLL
                 <span className="ml-2 text-xs font-mono text-text-muted">v1.0</span>
               </span>
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex flex-1 justify-center overflow-x-auto">
+          {/* Desktop Navigation — centered in the header row */}
+          <nav className="hidden md:flex justify-center overflow-x-auto">
             <div className="flex items-center gap-2 min-w-max px-1">
               {tabs.map((tab) => (
                 <NavLink
-                  key={tab.path}
+                  key={`${tab.path}-${tab.name}`}
                   to={tab.path}
+                  end={tab.end === true}
                   className={({ isActive }) =>
                     `px-3 py-2 rounded-md font-semibold transition-colors text-sm whitespace-nowrap flex items-center gap-2 ${
                       isActive ? 'bg-accent text-text-on-ui' : 'text-accent hover:bg-accent/20'
@@ -198,7 +204,7 @@ export default function NavBar() {
           </nav>
 
           {/* Right Actions */}
-          <div className="flex justify-end items-center gap-2">
+          <div className="flex justify-end items-center gap-2 min-w-0">
             <button
               title={currentStatsTitle}
               onClick={handleStatsViewerOpen}
@@ -233,8 +239,9 @@ export default function NavBar() {
               <div className="px-4 py-3 space-y-2">
                 {tabs.map((tab) => (
                   <NavLink
-                    key={tab.path}
+                    key={`${tab.path}-${tab.name}`}
                     to={tab.path}
+                    end={tab.end === true}
                     onClick={handleMobileNavClick}
                     className={({ isActive }) =>
                       `block px-3 py-2 rounded-md font-semibold transition-colors text-sm flex items-center gap-2 ${
